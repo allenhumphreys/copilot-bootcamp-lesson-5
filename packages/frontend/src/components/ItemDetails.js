@@ -251,20 +251,6 @@ function ItemDetails({
   const [isValid, setIsValid] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
 
-  // Dead code - unused variables and functions
-  const unusedVariable = 'This is never used';
-  const anotherUnusedVar = { data: 'unused', count: 0 };
-  
-  function deadFunction() {
-    console.log('This function is never called');
-    return false;
-  }
-  
-  function anotherDeadFunction(param1, param2, param3) {
-    // This function exists but is never used
-    const result = param1 + param2 + param3;
-    return result * 2;
-  }
 
   // This useEffect has a bug - missing dependency
   useEffect(() => {
@@ -394,16 +380,6 @@ function ItemDetails({
     return processGenericUpdate(itemData);
   };
 
-  // Dead code - unused event handlers
-  const handleUnusedClick = () => {
-    console.log('This handler is never attached to any element');
-  };
-
-  const handleAnotherUnusedEvent = (event) => {
-    event.preventDefault();
-    // More unused code
-    return false;
-  };
 
   const handleInputChange = (field, value) => {
     console.log('ENTRY: handleInputChange called for field:', field);

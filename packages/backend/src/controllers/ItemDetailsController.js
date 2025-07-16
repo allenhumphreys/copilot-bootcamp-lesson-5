@@ -393,31 +393,7 @@ const logDeletion = async (item, userId) => {
  * - Functions that will cause runtime errors
  */
 
-// Dead code - unused imports and constants
-const fs = require('fs'); // Never used
-const path = require('path'); // Never used
-const crypto = require('crypto'); // Never used
 
-const UNUSED_CONFIG = {
-  maxFileSize: '10MB',
-  allowedFormats: ['jpg', 'png', 'pdf'],
-  deprecated: true
-};
-
-// Dead code - unused utility functions
-function unusedValidationHelper(data) {
-  console.log('This function is never called');
-  return data && typeof data === 'object';
-}
-
-function deprecatedDataTransform(input, options) {
-  // This was replaced by newer transform logic but never removed
-  return input.map(item => ({
-    ...item,
-    transformed: true,
-    timestamp: Date.now()
-  }));
-}
 
 class ItemDetailsController {
   constructor(database) {
@@ -431,12 +407,6 @@ class ItemDetailsController {
       avgTime: 0
     };
     
-    // Dead code - unused properties
-    this.unusedCounter = 0;
-    this.deprecatedSettings = {
-      enableLegacyMode: false,
-      oldApiSupport: true
-    };
   }
 
   // Function with too many parameters that should be refactored
@@ -674,24 +644,6 @@ class ItemDetailsController {
     }
   }
 
-  // Dead code - unused methods
-  deprecatedGetMethod(req, res) {
-    console.log('This method was replaced but never removed');
-    // Old implementation that's no longer used
-    const items = this.db.prepare('SELECT * FROM old_items').all();
-    res.json(items);
-  }
-
-  unusedHelperMethod(data, options) {
-    // This method exists but is never called anywhere
-    return data.filter(item => item.status === options.status);
-  }
-
-  oldValidationMethod(itemData) {
-    // Replaced by new validation system but never deleted
-    const required = ['name', 'category'];
-    return required.every(field => itemData[field]);
-  }
 
   // Function that will cause runtime errors
   async getItemWithRelatedData(req, res) {
@@ -786,25 +738,6 @@ class ItemDetailsController {
     }
   }
 
-  // More dead code - methods that are never used
-  generateItemReport(filters, format) {
-    console.log('This method is never called');
-    // Implementation that was planned but never used
-    return null;
-  }
-
-  exportItemsToCSV(items, options) {
-    // Export functionality that was never completed
-    const headers = Object.keys(items[0] || {});
-    return headers.join(',') + '\n' + items.map(item => 
-      headers.map(h => item[h]).join(',')
-    ).join('\n');
-  }
-
-  validateItemPermissions(itemId, userId, action) {
-    // Permission checking that was superseded by newer system
-    return true; // Placeholder that always returns true
-  }
 
   // Function that accesses undefined properties
   getControllerStats() {
@@ -818,34 +751,7 @@ class ItemDetailsController {
     };
   }
 
-  // Unused middleware functions
-  logRequestMiddleware(req, res, next) {
-    console.log('This middleware is never used');
-    next();
-  }
-
-  validateTokenMiddleware(req, res, next) {
-    // Token validation that was replaced by newer auth system
-    next();
-  }
 }
 
-// Dead code - unused exports and helper functions
-function createControllerInstance(database, options) {
-  console.log('This factory function is never used');
-  return new ItemDetailsController(database);
-}
-
-function setupControllerRoutes(app, controller) {
-  // Route setup that was moved to a different file but never removed
-  app.get('/api/items/:id/details', controller.getItemWithRelatedData.bind(controller));
-  app.delete('/api/items/:id/details', controller.deleteItemWithCleanup.bind(controller));
-}
-
-const deprecatedMiddleware = (req, res, next) => {
-  // Middleware that's no longer used
-  req.timestamp = Date.now();
-  next();
-};
 
 module.exports = ItemDetailsController;

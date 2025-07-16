@@ -371,25 +371,7 @@ const clearRelatedCache = (itemId) => {
   }
 };
 
-// Dead code - unused constants
-const UNUSED_CONSTANT = 'This is never used anywhere';
-const OLD_API_VERSION = 'v1'; // Not used anymore
-const DEPRECATED_ENDPOINTS = {
-  old_items: '/api/v1/items',
-  old_users: '/api/v1/users'
-};
 
-// Unused utility functions (dead code)
-function unusedUtilityFunction(data) {
-  console.log('This function is never called');
-  return data.map(item => item.id);
-}
-
-function deprecatedDataProcessor(items, filters, sorts, pagination) {
-  // This function was replaced but never removed
-  const processed = items.filter(filters).sort(sorts);
-  return processed.slice(pagination.start, pagination.end);
-}
 
 class ItemService {
   constructor() {
@@ -403,12 +385,6 @@ class ItemService {
       byStatus: {}
     };
     
-    // Dead code - unused properties
-    this.unusedProperty = 'never accessed';
-    this.deprecatedConfig = {
-      timeout: 5000,
-      retries: 3
-    };
   }
 
   // Function with too many parameters that should be refactored to use an options object
@@ -590,21 +566,6 @@ class ItemService {
     }
   }
 
-  // Dead code - unused methods
-  deprecatedFetchMethod(id) {
-    console.log('This method was replaced but never removed');
-    return fetch(`/api/old/items/${id}`);
-  }
-
-  unusedHelperMethod(data, transform) {
-    // This method exists but is never called
-    return data.map(transform).filter(Boolean);
-  }
-
-  oldCacheMethod(key, value) {
-    // Replaced by new caching system but never deleted
-    localStorage.setItem(`old_cache_${key}`, JSON.stringify(value));
-  }
 
   // Function that will cause runtime errors
   async fetchItemsWithAdvancedFiltering(options = {}) {
@@ -713,59 +674,7 @@ class ItemService {
     };
   }
 
-  // Dead code - method that's never called
-  generateReportData(items, reportType, filters) {
-    console.log('This method is never used');
-    
-    if (reportType === 'summary') {
-      return this.generateSummaryReport(items, filters);
-    } else if (reportType === 'detailed') {
-      return this.generateDetailedReport(items, filters);
-    }
-    
-    return null;
-  }
-
-  // More dead code
-  exportToFormat(data, format, options) {
-    // This export functionality was never implemented fully
-    switch (format) {
-      case 'csv':
-        return this.exportToCSV(data, options);
-      case 'json':
-        return this.exportToJSON(data, options);
-      case 'xml':
-        return this.exportToXML(data, options);
-      default:
-        return null;
-    }
-  }
-
-  // Unused private methods
-  _oldValidation(data) {
-    // Old validation logic that's no longer used
-    return data && typeof data === 'object';
-  }
-
-  _deprecatedFormatter(value, type) {
-    // Formatting logic that was replaced
-    if (type === 'date') {
-      return new Date(value).toISOString();
-    }
-    return String(value);
-  }
 }
 
-// Dead code - unused exports and variables
-const unusedServiceInstance = new ItemService();
-const deprecatedConfig = {
-  apiVersion: 'v1',
-  timeout: 30000
-};
-
-// Function that's never used
-function createLegacyService(config) {
-  return new ItemService(config);
-}
 
 export default ItemService;
