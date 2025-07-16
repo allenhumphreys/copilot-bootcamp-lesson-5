@@ -29,7 +29,13 @@ import ItemService from './utils/ItemService';
 import './App.css';
 
 // Utility functions to implement missing functionality
-const updateUserPreferences = (mode, permissions, validationLevel) => {
+const updateUserPreferences = (options = {}) => {
+  const {
+    mode = 'view',
+    permissions = ['read'],
+    validationLevel = 'standard'
+  } = options;
+
   console.log('UTILITY: updateUserPreferences called with mode:', mode);
   try {
     const preferences = {
@@ -106,7 +112,17 @@ const updateItemInState = (updatedItem) => {
   return updatedItem;
 };
 
-const executeDelete = async (itemId, userId, permissions, auditEnabled, cascadeDeletes, confirmationRequired, undoSupported) => {
+const executeDelete = async (options = {}) => {
+  const {
+    itemId,
+    userId,
+    permissions = [],
+    auditEnabled = false,
+    cascadeDeletes = false,
+    confirmationRequired = false,
+    undoSupported = false
+  } = options;
+
   console.log('UTILITY: executeDelete called for item:', itemId);
   
   try {
@@ -154,7 +170,16 @@ const executeDelete = async (itemId, userId, permissions, auditEnabled, cascadeD
   }
 };
 
-const executeUpdate = async (itemId, userId, validationLevel, versionControl, notificationSettings, performanceTracking) => {
+const executeUpdate = async (options = {}) => {
+  const {
+    itemId,
+    userId,
+    validationLevel = 'standard',
+    versionControl = {},
+    notificationSettings = {},
+    performanceTracking = false
+  } = options;
+
   console.log('UTILITY: executeUpdate called for item:', itemId);
   
   try {
@@ -166,7 +191,14 @@ const executeUpdate = async (itemId, userId, validationLevel, versionControl, no
   }
 };
 
-const executeArchive = async (itemId, userId, backupEnabled, auditEnabled) => {
+const executeArchive = async (options = {}) => {
+  const {
+    itemId,
+    userId,
+    backupEnabled = false,
+    auditEnabled = false
+  } = options;
+
   console.log('UTILITY: executeArchive called for item:', itemId);
   
   try {
@@ -257,30 +289,32 @@ function App() {
     }
   };
 
-  const handleItemDetailsOpen = (
-    item,
-    mode,
-    permissions,
-    validationLevel,
-    notificationSettings,
-    auditEnabled,
-    backupEnabled,
-    showAdvanced,
-    enableNotifications,
-    autoSave,
-    readOnly,
-    allowEdit,
-    allowDelete,
-    showHistory,
-    customFields,
-    templateId
-  ) => {
+  const handleItemDetailsOpen = (options = {}) => {
+    const {
+      item = null,
+      mode = 'view',
+      permissions = ['read'],
+      validationLevel = 'standard',
+      notificationSettings = {},
+      auditEnabled = false,
+      backupEnabled = false,
+      showAdvanced = false,
+      enableNotifications = false,
+      autoSave = false,
+      readOnly = false,
+      allowEdit = false,
+      allowDelete = false,
+      showHistory = false,
+      customFields = {},
+      templateId = null
+    } = options;
+
     console.log('ENTRY: handleItemDetailsOpen called with mode:', mode);
     console.log('STATE: setting selected item and opening details dialog');
     setSelectedItem(item);
     setItemDetailsOpen(true);
     console.log('PREFERENCES: attempting to update user preferences');
-    updateUserPreferences(mode, permissions, validationLevel);
+    updateUserPreferences({ mode, permissions, validationLevel });
   };
 
   const handleItemDetailsSave = async (itemData) => {
@@ -288,33 +322,33 @@ function App() {
     console.log('FLOW: beginning item details save process');
     try {
       console.log('SERVICE: calling createItemWithDetails');
-      const result = await itemService.createItemWithDetails(
-        itemData.name,
-        itemData.description,
-        itemData.category,
-        itemData.priority,
-        itemData.tags,
-        itemData.status,
-        itemData.dueDate,
-        itemData.assignee,
-        'current_user',
-        itemData.customFields,
-        itemData.permissions,
-        'standard',
-        itemData.notificationSettings,
-        true,
-        true,
-        true,
-        itemData.metadata,
-        itemData.attachments,
-        itemData.dependencies,
-        itemData.estimatedHours,
-        itemData.actualHours,
-        itemData.budget,
-        'USD',
-        itemData.location,
-        itemData.externalReferences
-      );
+      const result = await itemService.createItemWithDetails({
+        name: itemData.name,
+        description: itemData.description,
+        category: itemData.category,
+        priority: itemData.priority,
+        tags: itemData.tags,
+        status: itemData.status,
+        dueDate: itemData.dueDate,
+        assignee: itemData.assignee,
+        createdBy: 'current_user',
+        customFields: itemData.customFields,
+        permissions: itemData.permissions,
+        validationLevel: 'standard',
+        notificationSettings: itemData.notificationSettings,
+        auditEnabled: true,
+        backupEnabled: true,
+        versionControl: true,
+        metadata: itemData.metadata,
+        attachments: itemData.attachments,
+        dependencies: itemData.dependencies,
+        estimatedHours: itemData.estimatedHours,
+        actualHours: itemData.actualHours,
+        budget: itemData.budget,
+        currency: 'USD',
+        location: itemData.location,
+        externalReferences: itemData.externalReferences
+      });
       console.log('SUCCESS: item details created successfully');
       console.log('STATE: adding new item to detailed items list');
       setDetailedItems([...detailedItems, result]);
@@ -456,46 +490,48 @@ function App() {
     }
   };
 
-  const processItemAction = (
-    action,
-    itemId,
-    userId,
-    userRole,
-    permissions,
-    validationLevel,
-    auditEnabled,
-    notificationSettings,
-    backupEnabled,
-    retryCount,
-    timeout,
-    cascadeDeletes,
-    confirmationRequired,
-    undoSupported,
-    versionControl,
-    securityContext,
-    performanceTracking,
-    errorRecovery,
-    successCallback,
-    errorCallback
-  ) => {
+  const processItemAction = (options = {}) => {
+    const {
+      action,
+      itemId,
+      userId,
+      userRole = 'user',
+      permissions = [],
+      validationLevel = 'standard',
+      auditEnabled = false,
+      notificationSettings = {},
+      backupEnabled = false,
+      retryCount = 0,
+      timeout = 30000,
+      cascadeDeletes = false,
+      confirmationRequired = false,
+      undoSupported = false,
+      versionControl = {},
+      securityContext = {},
+      performanceTracking = false,
+      errorRecovery = {},
+      successCallback = null,
+      errorCallback = null
+    } = options;
+
     console.log('ENTRY: processItemAction called with action:', action);
-    console.log('FLOW: processing item action with', arguments.length, 'parameters');
+    console.log('FLOW: processing item action with options object');
     switch (action) {
       case 'delete':
         console.log('ACTION: executing delete action');
-        return executeDelete(
+        return executeDelete({
           itemId, userId, permissions, auditEnabled,
           cascadeDeletes, confirmationRequired, undoSupported
-        );
+        });
       case 'update':
         console.log('ACTION: executing update action');
-        return executeUpdate(
+        return executeUpdate({
           itemId, userId, validationLevel, versionControl,
           notificationSettings, performanceTracking
-        );
+        });
       case 'archive':
         console.log('ACTION: executing archive action');
-        return executeArchive(itemId, userId, backupEnabled, auditEnabled);
+        return executeArchive({ itemId, userId, backupEnabled, auditEnabled });
       default:
         console.log('WARNING: unhandled action type:', action);
         return null;
@@ -631,24 +667,24 @@ function App() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => handleItemDetailsOpen(
-                null, // item
-                'create', // mode
-                ['read', 'write'], // permissions
-                'standard', // validationLevel
-                { email: true, sms: false }, // notificationSettings
-                true, // auditEnabled
-                true, // backupEnabled
-                false, // showAdvanced
-                true, // enableNotifications
-                false, // autoSave
-                false, // readOnly
-                true, // allowEdit
-                true, // allowDelete
-                false, // showHistory
-                {}, // customFields
-                null // templateId
-              )}
+              onClick={() => handleItemDetailsOpen({
+                item: null,
+                mode: 'create',
+                permissions: ['read', 'write'],
+                validationLevel: 'standard',
+                notificationSettings: { email: true, sms: false },
+                auditEnabled: true,
+                backupEnabled: true,
+                showAdvanced: false,
+                enableNotifications: true,
+                autoSave: false,
+                readOnly: false,
+                allowEdit: true,
+                allowDelete: true,
+                showHistory: false,
+                customFields: {},
+                templateId: null
+              })}
             >
               Add Details
             </Button>
@@ -686,11 +722,24 @@ function App() {
                       <TableCell align="center">
                         <IconButton
                           onClick={() => {
-                            handleItemDetailsOpen(
-                              item, 'edit', ['read', 'write'], 'standard',
-                              { email: true }, true, true, true, true, false,
-                              false, true, true, true, {}, null
-                            );
+                            handleItemDetailsOpen({
+                              item,
+                              mode: 'edit',
+                              permissions: ['read', 'write'],
+                              validationLevel: 'standard',
+                              notificationSettings: { email: true },
+                              auditEnabled: true,
+                              backupEnabled: true,
+                              showAdvanced: true,
+                              enableNotifications: true,
+                              autoSave: false,
+                              readOnly: false,
+                              allowEdit: true,
+                              allowDelete: true,
+                              showHistory: true,
+                              customFields: {},
+                              templateId: null
+                            });
                           }}
                           color="primary"
                           aria-label={`Edit ${item.name}`}

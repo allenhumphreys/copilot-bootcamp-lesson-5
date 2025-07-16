@@ -62,7 +62,13 @@ const validateDate = (dateString) => {
   return true;
 };
 
-const processBulkUpdate = async (itemData, userId, permissions) => {
+const processBulkUpdate = async (options = {}) => {
+  const {
+    itemData,
+    userId,
+    permissions = []
+  } = options;
+
   console.log('UTILITY: processBulkUpdate called');
   try {
     // Validate permissions for bulk operations
@@ -86,7 +92,13 @@ const processBulkUpdate = async (itemData, userId, permissions) => {
   }
 };
 
-const processSingleUpdate = async (itemData, userId, timestamp) => {
+const processSingleUpdate = async (options = {}) => {
+  const {
+    itemData,
+    userId,
+    timestamp
+  } = options;
+
   console.log('UTILITY: processSingleUpdate called');
   try {
     const singleResult = {
@@ -289,27 +301,29 @@ function ItemDetails({
   };
 
   // Function with long parameter list that should be refactored
-  const validateAndUpdateItem = (
-    name,
-    description, 
-    category,
-    priority,
-    tags,
-    status,
-    dueDate,
-    assignee,
-    createdBy,
-    permissions,
-    validationRules,
-    customFields,
-    showAdvanced,
-    enableNotifications,
-    autoSave,
-    readOnly,
-    allowEdit,
-    allowDelete
-  ) => {
-    console.log('ENTRY: validateAndUpdateItem called with', Object.keys(arguments).length, 'parameters');
+  const validateAndUpdateItem = (options = {}) => {
+    const {
+      name,
+      description, 
+      category,
+      priority,
+      tags,
+      status,
+      dueDate,
+      assignee,
+      createdBy,
+      permissions = [],
+      validationRules = {},
+      customFields = {},
+      showAdvanced = false,
+      enableNotifications = false,
+      autoSave = false,
+      readOnly = false,
+      allowEdit = false,
+      allowDelete = false
+    } = options;
+
+    console.log('ENTRY: validateAndUpdateItem called with options object');
     console.log('VALIDATION: starting validation process');
     let valid = true;
     const newErrors = {};
@@ -343,34 +357,36 @@ function ItemDetails({
   };
 
   // Another function with too many parameters
-  const processItemUpdate = (
-    itemData,
-    updateType,
-    timestamp,
-    userId,
-    userRole,
-    permissions,
-    validationLevel,
-    notificationSettings,
-    auditEnabled,
-    backupEnabled,
-    versionControl,
-    conflictResolution,
-    retryCount,
-    timeout,
-    batchMode,
-    asyncMode
-  ) => {
+  const processItemUpdate = (options = {}) => {
+    const {
+      itemData,
+      updateType,
+      timestamp,
+      userId,
+      userRole = 'user',
+      permissions = [],
+      validationLevel = 'standard',
+      notificationSettings = {},
+      auditEnabled = false,
+      backupEnabled = false,
+      versionControl = {},
+      conflictResolution = {},
+      retryCount = 0,
+      timeout = 30000,
+      batchMode = false,
+      asyncMode = false
+    } = options;
+
     console.log('ENTRY: processItemUpdate called with update type:', updateType);
-    console.log('FLOW: processing item update with', Object.keys(arguments).length, 'parameters');
+    console.log('FLOW: processing item update with options object');
     if (updateType === 'bulk') {
       console.log('FLOW: processing bulk update');
       // Process bulk update
-      return processBulkUpdate(itemData, userId, permissions);
+      return processBulkUpdate({ itemData, userId, permissions });
     } else if (updateType === 'single') {
       console.log('FLOW: processing single update');
       // Process single update
-      return processSingleUpdate(itemData, userId, timestamp);
+      return processSingleUpdate({ itemData, userId, timestamp });
     }
     
     console.log('FLOW: falling back to generic update processing');

@@ -217,16 +217,16 @@ app.post('/api/items/details', async (req, res) => {
     } = req.body;
     console.log('PARSING: successfully extracted request parameters');
 
-    console.log('CONTROLLER: calling createDetailedItem with', arguments.length, 'parameters');
-    // This will cause runtime errors due to the problematic function with too many parameters
-    await itemDetailsController.createDetailedItem(
-      req, res, name, description, category, priority, tags, status,
+    console.log('CONTROLLER: calling createDetailedItem with options object');
+    // Refactored to use options object instead of long parameter list
+    await itemDetailsController.createDetailedItem(req, res, {
+      name, description, category, priority, tags, status,
       dueDate, assignee, createdBy, customFields, attachments, permissions,
       validationLevel, notificationSettings, auditEnabled, backupEnabled,
       versionControl, metadata, dependencies, estimatedHours, budget,
       location, externalRefs, workflowStage, approvalRequired, templateId,
       parentItemId, linkedItems, reminderSettings
-    );
+    });
   } catch (error) {
     console.log('ERROR: create detailed item route failed:', error.message);
     console.error('Error creating detailed item:', error);
@@ -242,17 +242,34 @@ app.put('/api/items/:id/details', async (req, res) => {
     console.log('PARSING: extracted item ID and update data');
     
     console.log('CONTROLLER: calling updateItemWithAdvancedOptions');
-    // This will cause runtime errors due to problematic function with many parameters
-    const result = await itemDetailsController.updateItemWithAdvancedOptions(
-      id, updates, req.user?.id || 'anonymous', req.user?.role || 'user',
-      req.permissions, req.validationRules, req.auditOptions,
-      req.notificationOptions, req.backupOptions, req.versioningOptions,
-      req.conflictResolution, req.retryPolicy, req.timeoutSettings,
-      req.cachingStrategy, req.loggingLevel, req.performanceTracking,
-      req.securityContext, req.transactionOptions, req.rollbackStrategy,
-      req.successCallbacks, req.errorCallbacks, req.progressCallbacks,
-      req.customValidators, req.postProcessors, req.preProcessors
-    );
+    // Refactored to use options object instead of long parameter list
+    const result = await itemDetailsController.updateItemWithAdvancedOptions({
+      itemId: id, 
+      updates, 
+      userId: req.user?.id || 'anonymous', 
+      userRole: req.user?.role || 'user',
+      permissions: req.permissions, 
+      validationRules: req.validationRules, 
+      auditOptions: req.auditOptions,
+      notificationOptions: req.notificationOptions, 
+      backupOptions: req.backupOptions, 
+      versioningOptions: req.versioningOptions,
+      conflictResolution: req.conflictResolution, 
+      retryPolicy: req.retryPolicy, 
+      timeoutSettings: req.timeoutSettings,
+      cachingStrategy: req.cachingStrategy, 
+      loggingLevel: req.loggingLevel, 
+      performanceTracking: req.performanceTracking,
+      securityContext: req.securityContext, 
+      transactionOptions: req.transactionOptions, 
+      rollbackStrategy: req.rollbackStrategy,
+      successCallbacks: req.successCallbacks, 
+      errorCallbacks: req.errorCallbacks, 
+      progressCallbacks: req.progressCallbacks,
+      customValidators: req.customValidators, 
+      postProcessors: req.postProcessors, 
+      preProcessors: req.preProcessors
+    });
     
     console.log('SUCCESS: detailed item update completed');
     res.json(result);

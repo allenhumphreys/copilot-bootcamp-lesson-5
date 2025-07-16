@@ -440,40 +440,40 @@ class ItemDetailsController {
   }
 
   // Function with too many parameters that should be refactored
-  async createDetailedItem(
-    req,
-    res,
-    name,
-    description,
-    category,
-    priority,
-    tags,
-    status,
-    dueDate,
-    assignee,
-    createdBy,
-    customFields,
-    attachments,
-    permissions,
-    validationLevel,
-    notificationSettings,
-    auditEnabled,
-    backupEnabled,
-    versionControl,
-    metadata,
-    dependencies,
-    estimatedHours,
-    budget,
-    location,
-    externalRefs,
-    workflowStage,
-    approvalRequired,
-    templateId,
-    parentItemId,
-    linkedItems,
-    reminderSettings
-  ) {
-    console.log('ENTRY: createDetailedItem called with', arguments.length, 'parameters');
+  async createDetailedItem(req, res, options = {}) {
+    const {
+      name,
+      description,
+      category,
+      priority,
+      tags,
+      status,
+      dueDate,
+      assignee,
+      createdBy,
+      customFields = {},
+      attachments = [],
+      permissions = [],
+      validationLevel = 'standard',
+      notificationSettings = {},
+      auditEnabled = false,
+      backupEnabled = false,
+      versionControl = {},
+      metadata = {},
+      dependencies = [],
+      estimatedHours = 0,
+      budget = 0,
+      location = '',
+      externalRefs = [],
+      workflowStage = 'draft',
+      approvalRequired = false,
+      templateId = null,
+      parentItemId = null,
+      linkedItems = [],
+      reminderSettings = {}
+    } = options;
+
+    console.log('ENTRY: createDetailedItem called with options object');
     console.log('FLOW: beginning detailed item creation process');
     
     try {
@@ -565,34 +565,36 @@ class ItemDetailsController {
   }
 
   // Another function with too many parameters
-  async updateItemWithAdvancedOptions(
-    itemId,
-    updates,
-    userId,
-    userRole,
-    permissions,
-    validationRules,
-    auditOptions,
-    notificationOptions,
-    backupOptions,
-    versioningOptions,
-    conflictResolution,
-    retryPolicy,
-    timeoutSettings,
-    cachingStrategy,
-    loggingLevel,
-    performanceTracking,
-    securityContext,
-    transactionOptions,
-    rollbackStrategy,
-    successCallbacks,
-    errorCallbacks,
-    progressCallbacks,
-    customValidators,
-    postProcessors,
-    preProcessors
-  ) {
-    console.log('ENTRY: updateItemWithAdvancedOptions called with', arguments.length, 'parameters');
+  async updateItemWithAdvancedOptions(options = {}) {
+    const {
+      itemId,
+      updates,
+      userId,
+      userRole = 'user',
+      permissions = [],
+      validationRules = {},
+      auditOptions = {},
+      notificationOptions = {},
+      backupOptions = {},
+      versioningOptions = {},
+      conflictResolution = {},
+      retryPolicy = {},
+      timeoutSettings = {},
+      cachingStrategy = {},
+      loggingLevel = 'info',
+      performanceTracking = false,
+      securityContext = {},
+      transactionOptions = {},
+      rollbackStrategy = {},
+      successCallbacks = [],
+      errorCallbacks = [],
+      progressCallbacks = [],
+      customValidators = [],
+      postProcessors = [],
+      preProcessors = []
+    } = options;
+
+    console.log('ENTRY: updateItemWithAdvancedOptions called with options object');
     console.log('FLOW: beginning advanced item update process');
     
     try {

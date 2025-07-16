@@ -412,34 +412,36 @@ class ItemService {
   }
 
   // Function with too many parameters that should be refactored to use an options object
-  async createItemWithDetails(
-    name,
-    description,
-    category,
-    priority,
-    tags,
-    status,
-    dueDate,
-    assignee,
-    createdBy,
-    customFields,
-    permissions,
-    validationLevel,
-    notificationSettings,
-    auditEnabled,
-    backupEnabled,
-    versionControl,
-    metadata,
-    attachments,
-    dependencies,
-    estimatedHours,
-    actualHours,
-    budget,
-    currency,
-    location,
-    externalReferences
-  ) {
-    console.log('ENTRY: createItemWithDetails called with', arguments.length, 'parameters');
+  async createItemWithDetails(options = {}) {
+    const {
+      name,
+      description,
+      category,
+      priority,
+      tags,
+      status,
+      dueDate,
+      assignee,
+      createdBy,
+      customFields = {},
+      permissions = [],
+      validationLevel = 'standard',
+      notificationSettings = {},
+      auditEnabled = false,
+      backupEnabled = false,
+      versionControl = {},
+      metadata = {},
+      attachments = [],
+      dependencies = [],
+      estimatedHours = 0,
+      actualHours = 0,
+      budget = 0,
+      currency = 'USD',
+      location = '',
+      externalReferences = []
+    } = options;
+
+    console.log('ENTRY: createItemWithDetails called with options object');
     console.log('FLOW: beginning item creation process');
     
     try {
@@ -512,29 +514,31 @@ class ItemService {
   }
 
   // Another function with too many parameters
-  async updateItemWithValidation(
-    itemId,
-    updates,
-    validationRules,
-    userPermissions,
-    auditOptions,
-    notificationOptions,
-    backupOptions,
-    versioningOptions,
-    conflictResolution,
-    retryPolicy,
-    timeoutSettings,
-    cachingStrategy,
-    loggingLevel,
-    performanceTracking,
-    securityContext,
-    transactionOptions,
-    rollbackStrategy,
-    successCallbacks,
-    errorCallbacks,
-    progressCallbacks
-  ) {
-    console.log('ENTRY: updateItemWithValidation called with', arguments.length, 'parameters');
+  async updateItemWithValidation(options = {}) {
+    const {
+      itemId,
+      updates,
+      validationRules = {},
+      userPermissions = [],
+      auditOptions = {},
+      notificationOptions = {},
+      backupOptions = {},
+      versioningOptions = {},
+      conflictResolution = {},
+      retryPolicy = {},
+      timeoutSettings = {},
+      cachingStrategy = {},
+      loggingLevel = 'info',
+      performanceTracking = false,
+      securityContext = {},
+      transactionOptions = {},
+      rollbackStrategy = {},
+      successCallbacks = [],
+      errorCallbacks = [],
+      progressCallbacks = []
+    } = options;
+
+    console.log('ENTRY: updateItemWithValidation called with options object');
     console.log('FLOW: beginning item update process');
     
     try {
@@ -603,19 +607,21 @@ class ItemService {
   }
 
   // Function that will cause runtime errors
-  async fetchItemsWithAdvancedFiltering(
-    filters,
-    sorting,
-    pagination,
-    includes,
-    excludes,
-    searchTerm,
-    dateRange,
-    userContext,
-    permissions,
-    cacheOptions
-  ) {
-    console.log('ENTRY: fetchItemsWithAdvancedFiltering called with', arguments.length, 'parameters');
+  async fetchItemsWithAdvancedFiltering(options = {}) {
+    const {
+      filters = {},
+      sorting = {},
+      pagination = {},
+      includes = [],
+      excludes = [],
+      searchTerm = '',
+      dateRange = {},
+      userContext = {},
+      permissions = [],
+      cacheOptions = {}
+    } = options;
+
+    console.log('ENTRY: fetchItemsWithAdvancedFiltering called with options object');
     console.log('FLOW: beginning advanced item fetch process');
     
     try {
