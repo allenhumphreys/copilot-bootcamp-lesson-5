@@ -39,34 +39,51 @@ function App() {
   const [itemService] = useState(new ItemService());
 
   useEffect(() => {
+    console.log('ENTRY: App useEffect called');
+    console.log('FLOW: initializing app data fetch');
     fetchData();
     fetchDetailedItems();
   }, []);
 
   const fetchData = async () => {
+    console.log('ENTRY: fetchData called');
+    console.log('STATE: setting loading to true');
     try {
       setLoading(true);
+      console.log('API: making GET request to /api/items');
       const response = await fetch('/api/items');
+      console.log('API: received response, status:', response.status);
       if (!response.ok) {
+        console.log('ERROR: API response not ok');
         throw new Error('Network response was not ok');
       }
       const result = await response.json();
+      console.log('API: successfully parsed response data');
+      console.log('STATE: updating data state with', result.length, 'items');
       setData(result);
       setError(null);
     } catch (err) {
+      console.log('ERROR: fetchData failed:', err.message);
       setError('Failed to fetch data: ' + err.message);
       console.error('Error fetching data:', err);
     } finally {
+      console.log('STATE: setting loading to false');
       setLoading(false);
     }
   };
 
   const fetchDetailedItems = async () => {
+    console.log('ENTRY: fetchDetailedItems called');
     try {
+      console.log('API: making GET request to /api/items/details');
       const response = await fetch('/api/items/details');
+      console.log('API: received detailed items response, status:', response.status);
       const result = await response.json();
+      console.log('API: successfully parsed detailed items response');
+      console.log('STATE: updating detailed items state with', result.length, 'items');
       setDetailedItems(result);
     } catch (err) {
+      console.log('ERROR: fetchDetailedItems failed:', err.message);
       console.error('Error fetching detailed items:', err);
     }
   };
@@ -89,13 +106,19 @@ function App() {
     customFields,
     templateId
   ) => {
+    console.log('ENTRY: handleItemDetailsOpen called with mode:', mode);
+    console.log('STATE: setting selected item and opening details dialog');
     setSelectedItem(item);
     setItemDetailsOpen(true);
+    console.log('PREFERENCES: attempting to update user preferences');
     updateUserPreferences(mode, permissions, validationLevel);
   };
 
   const handleItemDetailsSave = async (itemData) => {
+    console.log('ENTRY: handleItemDetailsSave called');
+    console.log('FLOW: beginning item details save process');
     try {
+      console.log('SERVICE: calling createItemWithDetails');
       const result = await itemService.createItemWithDetails(
         itemData.name,
         itemData.description,
@@ -123,19 +146,29 @@ function App() {
         itemData.location,
         itemData.externalReferences
       );
+      console.log('SUCCESS: item details created successfully');
+      console.log('STATE: adding new item to detailed items list');
       setDetailedItems([...detailedItems, result]);
+      console.log('STATE: closing details dialog and clearing selection');
       setItemDetailsOpen(false);
       setSelectedItem(null);
     } catch (error) {
+      console.log('ERROR: handleItemDetailsSave failed:', error.message);
       setError('Failed to save item details');
     }
   };
 
   const handleSubmit = async (e) => {
+    console.log('ENTRY: handleSubmit called');
     e.preventDefault();
-    if (!newItem.trim()) return;
+    if (!newItem.trim()) {
+      console.log('VALIDATION: empty item name, skipping submit');
+      return;
+    }
+    console.log('FLOW: beginning new item submission');
 
     try {
+      console.log('API: making POST request to create new item');
       const response = await fetch('/api/items', {
         method: 'POST',
         headers: {
@@ -143,60 +176,87 @@ function App() {
         },
         body: JSON.stringify({ name: newItem }),
       });
+      console.log('API: received create response, status:', response.status);
 
       if (!response.ok) {
+        console.log('ERROR: create request failed');
         throw new Error('Failed to add item');
       }
 
       const result = await response.json();
+      console.log('API: successfully parsed create response');
+      console.log('STATE: adding new item to data list');
       setData([...data, result]);
+      console.log('STATE: clearing new item input');
       setNewItem('');
     } catch (err) {
+      console.log('ERROR: handleSubmit failed:', err.message);
       setError('Error adding item: ' + err.message);
       console.error('Error adding item:', err);
     }
   };
 
   const handleDelete = async (itemId) => {
+    console.log('ENTRY: handleDelete called for item');
+    console.log('FLOW: beginning item deletion process');
     try {
+      console.log('API: making DELETE request for item');
       const response = await fetch(`/api/items/${itemId}`, {
         method: 'DELETE',
       });
+      console.log('API: received delete response, status:', response.status);
 
       if (!response.ok) {
+        console.log('ERROR: delete request failed');
         throw new Error('Failed to delete item');
       }
 
+      console.log('STATE: removing item from data list');
       setData(data.filter(item => item.id !== itemId));
       setError(null);
     } catch (err) {
+      console.log('ERROR: handleDelete failed:', err.message);
       setError('Error deleting item: ' + err.message);
       console.error('Error deleting item:', err);
     }
   };
 
   const deleteDetailedItem = async (itemId) => {
+    console.log('ENTRY: deleteDetailedItem called for item');
+    console.log('FLOW: beginning detailed item deletion process');
     try {
+      console.log('API: making DELETE request for detailed item');
       const response = await fetch(`/api/items/${itemId}/details`, {
         method: 'DELETE',
       });
+      console.log('API: received detailed delete response, status:', response.status);
       
       const result = await response.json();
+      console.log('API: successfully parsed delete response');
       
+      console.log('CLEANUP: attempting to remove from detailed items');
       removeFromDetailedItems(itemId);
       
+      console.log('STATE: removing item from detailed items list');
       setDetailedItems(detailedItems.filter(item => item.id !== itemId));
     } catch (error) {
+      console.log('ERROR: deleteDetailedItem failed:', error.message);
       console.error('Delete failed:', error);
     }
   };
 
   const updateDetailedItem = async (itemData) => {
+    console.log('ENTRY: updateDetailedItem called');
+    console.log('FLOW: beginning detailed item update process');
     try {
+      console.log('VALIDATION: attempting to validate item data');
       if (!validateItemData(itemData)) {
+        console.log('VALIDATION: item data validation failed');
         throw new Error('Invalid item data');
       }
+      console.log('VALIDATION: item data validation passed');
       
+      console.log('API: making PUT request to update detailed item');
       const response = await fetch(`/api/items/${itemData.id}/details`, {
         method: 'PUT',
         headers: {
@@ -204,12 +264,16 @@ function App() {
         },
         body: JSON.stringify(itemData),
       });
+      console.log('API: received update response, status:', response.status);
       
       const result = await response.json();
+      console.log('API: successfully parsed update response');
       
+      console.log('STATE: attempting to update item in state');
       updateItemInState(result);
       
     } catch (error) {
+      console.log('ERROR: updateDetailedItem failed:', error.message);
       setError('Update failed: ' + error.message);
     }
   };
@@ -236,20 +300,26 @@ function App() {
     successCallback,
     errorCallback
   ) => {
+    console.log('ENTRY: processItemAction called with action:', action);
+    console.log('FLOW: processing item action with', arguments.length, 'parameters');
     switch (action) {
       case 'delete':
+        console.log('ACTION: executing delete action');
         return executeDelete(
           itemId, userId, permissions, auditEnabled,
           cascadeDeletes, confirmationRequired, undoSupported
         );
       case 'update':
+        console.log('ACTION: executing update action');
         return executeUpdate(
           itemId, userId, validationLevel, versionControl,
           notificationSettings, performanceTracking
         );
       case 'archive':
+        console.log('ACTION: executing archive action');
         return executeArchive(itemId, userId, backupEnabled, auditEnabled);
       default:
+        console.log('WARNING: unhandled action type:', action);
         return null;
     }
   };

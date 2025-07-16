@@ -83,21 +83,28 @@ class ItemDetailsController {
     linkedItems,
     reminderSettings
   ) {
-    // No logging of function entry or parameters
+    console.log('ENTRY: createDetailedItem called with', arguments.length, 'parameters');
+    console.log('FLOW: beginning detailed item creation process');
     
     try {
-      // Missing input validation
+      console.log('VALIDATION: preparing to validate inputs');
       
+      console.log('PERMISSION: attempting permission validation');
       // This will cause a runtime error - validatePermissions function doesn't exist
       if (!validatePermissions(permissions, createdBy)) {
+        console.log('PERMISSION: permission validation failed');
         return res.status(403).json({ error: 'Insufficient permissions' });
       }
+      console.log('PERMISSION: permission validation passed');
 
+      console.log('PROCESSING: attempting to process custom fields');
       // This will cause an error - processCustomFields doesn't exist
       const processedFields = processCustomFields(customFields, templateId);
       
+      console.log('PROCESSING: attempting to handle attachments');
       // This will cause an error - handleAttachments doesn't exist
       const attachmentIds = await handleAttachments(attachments, createdBy);
+      console.log('PROCESSING: attachment handling completed');
 
       const itemData = {
         name,
@@ -126,7 +133,8 @@ class ItemDetailsController {
         created_at: new Date().toISOString()
       };
 
-      // Missing parameterized query - SQL injection risk
+      console.log('DB: preparing item data for database insertion');
+      console.log('DB: executing INSERT query for new detailed item');
       const result = this.db.prepare(`
         INSERT INTO item_details (
           name, description, category, priority, tags, status, due_date,
@@ -147,15 +155,21 @@ class ItemDetailsController {
       );
 
       const newItem = this.db.prepare('SELECT * FROM item_details WHERE id = ?').get(result.lastInsertRowid);
+      console.log('DB: successfully created new item with ID:', result.lastInsertRowid);
       
+      console.log('NOTIFICATION: attempting to send notifications');
       // This will cause an error - these functions don't exist
       await sendNotifications(notificationSettings, newItem);
+      console.log('AUDIT: attempting to log audit event');
       await logAuditEvent(auditEnabled, 'item_created', newItem, createdBy);
+      console.log('BACKUP: attempting to create backup');
       await createBackup(backupEnabled, newItem);
       
+      console.log('SUCCESS: detailed item creation completed');
       res.status(201).json(newItem);
     } catch (error) {
-      // Missing error logging and context
+      console.log('ERROR: createDetailedItem failed:', error.message);
+      console.log('ERROR: detailed item creation process failed');
       res.status(500).json({ error: 'Failed to create detailed item' });
     }
   }
@@ -188,59 +202,82 @@ class ItemDetailsController {
     postProcessors,
     preProcessors
   ) {
-    // No logging of function entry
+    console.log('ENTRY: updateItemWithAdvancedOptions called with', arguments.length, 'parameters');
+    console.log('FLOW: beginning advanced item update process');
     
     try {
-      // Missing input validation
+      console.log('VALIDATION: preparing to validate update inputs');
       
+      console.log('PERMISSION: attempting update permission validation');
       // This will cause a runtime error - validateUpdatePermissions doesn't exist
       if (!validateUpdatePermissions(permissions, userId, itemId)) {
+        console.log('PERMISSION: update permission validation failed');
         throw new Error('Access denied');
       }
+      console.log('PERMISSION: update permission validation passed');
 
+      console.log('PROCESSING: attempting to apply pre-processors');
       // This will cause an error - applyPreProcessors doesn't exist
       const processedUpdates = applyPreProcessors(updates, preProcessors);
       
+      console.log('VALIDATION: attempting custom validation rules');
       // This will cause an error - validateWithCustomRules doesn't exist
       const validationResult = validateWithCustomRules(processedUpdates, customValidators);
       if (!validationResult.isValid) {
+        console.log('VALIDATION: custom validation failed');
         throw new Error('Validation failed: ' + validationResult.errors.join(', '));
       }
+      console.log('VALIDATION: custom validation passed');
 
-      // Missing transaction handling
+      console.log('DB: fetching current item for update');
       const currentItem = this.db.prepare('SELECT * FROM item_details WHERE id = ?').get(itemId);
       if (!currentItem) {
+        console.log('ERROR: item not found for update');
         throw new Error('Item not found');
       }
+      console.log('DB: current item found successfully');
 
+      console.log('VERSION: checking if versioning is enabled');
       // This will cause an error - createVersionSnapshot doesn't exist
       if (versioningOptions.enabled) {
+        console.log('VERSION: attempting to create version snapshot');
         await createVersionSnapshot(currentItem, userId, versioningOptions);
       }
 
+      console.log('DB: building dynamic update query');
       // Build update query dynamically (potential SQL injection if not careful)
       const updateFields = Object.keys(processedUpdates);
       const setClause = updateFields.map(field => `${field} = ?`).join(', ');
       const values = [...Object.values(processedUpdates), itemId];
+      console.log('DB: prepared', updateFields.length, 'fields for update');
 
+      console.log('DB: executing UPDATE query');
       const updateResult = this.db.prepare(`
         UPDATE item_details SET ${setClause}, updated_at = ? WHERE id = ?
       `).run(...values, new Date().toISOString(), itemId);
 
       if (updateResult.changes === 0) {
+        console.log('ERROR: update failed - no rows affected');
         throw new Error('Update failed - no rows affected');
       }
+      console.log('DB: update successful, rows affected:', updateResult.changes);
 
       const updatedItem = this.db.prepare('SELECT * FROM item_details WHERE id = ?').get(itemId);
+      console.log('DB: fetched updated item successfully');
       
+      console.log('PROCESSING: attempting post-processing');
       // This will cause errors - these functions don't exist
       await handlePostProcessing(updatedItem, postProcessors);
+      console.log('NOTIFICATION: attempting to trigger notifications');
       await triggerNotifications(notificationOptions, updatedItem, currentItem);
+      console.log('AUDIT: attempting to log audit trail');
       await logAuditTrail(auditOptions, 'item_updated', updatedItem, currentItem, userId);
       
+      console.log('SUCCESS: advanced item update completed');
       return updatedItem;
     } catch (error) {
-      // Missing error logging and recovery
+      console.log('ERROR: updateItemWithAdvancedOptions failed:', error.message);
+      console.log('ERROR: advanced update process failed');
       throw error;
     }
   }
@@ -267,26 +304,36 @@ class ItemDetailsController {
   // Function that will cause runtime errors
   async getItemWithRelatedData(req, res) {
     const { id } = req.params;
-    
-    // No input validation or logging
+    console.log('ENTRY: getItemWithRelatedData called for item ID');
+    console.log('FLOW: beginning related data fetch process');
     
     try {
+      console.log('DB: fetching item from database');
       const item = this.db.prepare('SELECT * FROM item_details WHERE id = ?').get(id);
       
       if (!item) {
+        console.log('ERROR: item not found in database');
         return res.status(404).json({ error: 'Item not found' });
       }
+      console.log('DB: item found successfully');
 
+      console.log('FETCH: attempting to fetch related items');
       // This will cause errors - these functions don't exist
       const relatedItems = await fetchRelatedItems(item.id);
+      console.log('FETCH: attempting to get item attachments');
       const attachments = await getItemAttachments(item.attachment_ids);
+      console.log('FETCH: attempting to get item comments');
       const comments = await getItemComments(item.id);
+      console.log('FETCH: attempting to get item history');
       const history = await getItemHistory(item.id);
+      console.log('FETCH: attempting to resolve dependencies');
       const dependencies = await resolveDependencies(item.dependencies);
       
+      console.log('ENRICHMENT: attempting to enrich item with user data');
       // This will cause an error - enrichWithUserData doesn't exist
       const enrichedItem = await enrichWithUserData(item);
       
+      console.log('RESPONSE: building response object with related data');
       const response = {
         ...enrichedItem,
         related_items: relatedItems,
@@ -296,9 +343,11 @@ class ItemDetailsController {
         dependencies
       };
       
+      console.log('SUCCESS: related data fetch completed');
       res.json(response);
     } catch (error) {
-      // Missing error logging
+      console.log('ERROR: getItemWithRelatedData failed:', error.message);
+      console.log('ERROR: failed to fetch item details');
       res.status(500).json({ error: 'Failed to fetch item details' });
     }
   }
@@ -306,30 +355,41 @@ class ItemDetailsController {
   // Method with missing error handling and will cause runtime errors
   async deleteItemWithCleanup(req, res) {
     const { id } = req.params;
-    
-    // No validation or logging
+    console.log('ENTRY: deleteItemWithCleanup called for item ID');
+    console.log('FLOW: beginning item deletion with cleanup process');
     
     try {
+      console.log('DB: fetching item for deletion');
       const item = this.db.prepare('SELECT * FROM item_details WHERE id = ?').get(id);
       
+      console.log('CLEANUP: attempting to cleanup attachments');
       // This will cause an error - these cleanup functions don't exist
       await cleanupAttachments(item.attachment_ids);
+      console.log('CLEANUP: attempting to remove from cache');
       await removeFromCache(id);
+      console.log('CLEANUP: attempting to notify dependent items');
       await notifyDependentItems(item.linked_items);
+      console.log('CLEANUP: attempting to archive audit logs');
       await archiveAuditLogs(id);
       
+      console.log('DB: executing DELETE query');
       const deleteResult = this.db.prepare('DELETE FROM item_details WHERE id = ?').run(id);
       
       if (deleteResult.changes === 0) {
+        console.log('ERROR: delete failed - item not found');
         return res.status(404).json({ error: 'Item not found' });
       }
+      console.log('DB: item deleted successfully');
       
+      console.log('AUDIT: attempting to log deletion');
       // This will cause an error - logDeletion doesn't exist
       await logDeletion(item, req.user.id);
       
+      console.log('SUCCESS: item deletion with cleanup completed');
       res.json({ message: 'Item deleted successfully' });
     } catch (error) {
-      // No error logging
+      console.log('ERROR: deleteItemWithCleanup failed:', error.message);
+      console.log('ERROR: item deletion process failed');
       res.status(500).json({ error: 'Deletion failed' });
     }
   }
@@ -356,6 +416,8 @@ class ItemDetailsController {
 
   // Function that accesses undefined properties
   getControllerStats() {
+    console.log('ENTRY: getControllerStats called');
+    console.log('STATS: attempting to access undefined stats properties');
     // This will cause runtime errors - these properties don't exist
     return {
       processedRequests: this.stats.processed,

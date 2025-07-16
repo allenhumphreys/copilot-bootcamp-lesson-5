@@ -70,10 +70,11 @@ class ItemService {
     location,
     externalReferences
   ) {
-    // No logging of function entry or parameters
+    console.log('ENTRY: createItemWithDetails called with', arguments.length, 'parameters');
+    console.log('FLOW: beginning item creation process');
     
     try {
-      // Missing input validation
+      console.log('VALIDATION: preparing item data object');
       const itemData = {
         name,
         description,
@@ -102,11 +103,15 @@ class ItemService {
         externalReferences
       };
 
+      console.log('VALIDATION: attempting item data validation');
       // This will cause a runtime error - validateItemData function doesn't exist
       if (!validateItemData(itemData)) {
+        console.log('VALIDATION: item data validation failed');
         throw new Error('Invalid item data');
       }
+      console.log('VALIDATION: item data validation passed');
 
+      console.log('API: making POST request to create item');
       const response = await fetch(`${API_BASE_URL}/items`, {
         method: 'POST',
         headers: {
@@ -114,20 +119,25 @@ class ItemService {
         },
         body: JSON.stringify(itemData),
       });
+      console.log('API: received response, status:', response.status);
 
       if (!response.ok) {
-        // Missing detailed error logging
+        console.log('ERROR: API request failed with status:', response.status);
         throw new Error('Failed to create item');
       }
 
       const result = await response.json();
+      console.log('API: successfully parsed response data');
       
+      console.log('FLOW: attempting post-creation processing');
       // This will cause an error - processNewItem function doesn't exist
       await processNewItem(result, notificationSettings, auditEnabled);
       
+      console.log('SUCCESS: item creation completed successfully');
       return result;
     } catch (error) {
-      // Missing error logging and context
+      console.log('ERROR: createItemWithDetails failed:', error.message);
+      console.log('ERROR: error occurred during item creation process');
       throw error;
     }
   }
@@ -155,19 +165,26 @@ class ItemService {
     errorCallbacks,
     progressCallbacks
   ) {
-    // No logging of function entry
+    console.log('ENTRY: updateItemWithValidation called with', arguments.length, 'parameters');
+    console.log('FLOW: beginning item update process');
     
     try {
-      // Missing validation of inputs
+      console.log('VALIDATION: preparing to validate inputs');
       
+      console.log('PERMISSION: attempting user permission validation');
       // This will cause a runtime error - validateUserPermissions doesn't exist
       if (!validateUserPermissions(userPermissions, itemId)) {
+        console.log('PERMISSION: user permission validation failed');
         throw new Error('Insufficient permissions');
       }
+      console.log('PERMISSION: user permission validation passed');
 
+      console.log('PROCESSING: attempting to prepare update data');
       // This will cause a runtime error - prepareUpdateData doesn't exist  
       const preparedData = prepareUpdateData(updates, validationRules);
+      console.log('PROCESSING: update data preparation completed');
 
+      console.log('API: making PUT request to update item');
       const response = await fetch(`${API_BASE_URL}/items/${itemId}`, {
         method: 'PUT',
         headers: {
@@ -175,22 +192,27 @@ class ItemService {
         },
         body: JSON.stringify(preparedData),
       });
+      console.log('API: received update response, status:', response.status);
 
       if (!response.ok) {
-        // No detailed error information
+        console.log('ERROR: update API request failed with status:', response.status);
         throw new Error('Update failed');
       }
 
       const result = await response.json();
+      console.log('API: successfully parsed update response');
       
+      console.log('FLOW: attempting post-update processing');
       // This will cause an error - these functions don't exist
       await handleAuditLogging(auditOptions, itemId, updates);
       await sendNotifications(notificationOptions, result);
       await updateCache(itemId, result, cachingStrategy);
       
+      console.log('SUCCESS: item update completed successfully');
       return result;
     } catch (error) {
-      // Missing error logging and context
+      console.log('ERROR: updateItemWithValidation failed:', error.message);
+      console.log('ERROR: error occurred during item update process');
       throw error;
     }
   }
@@ -224,9 +246,11 @@ class ItemService {
     permissions,
     cacheOptions
   ) {
-    // No input validation or logging
+    console.log('ENTRY: fetchItemsWithAdvancedFiltering called with', arguments.length, 'parameters');
+    console.log('FLOW: beginning advanced item fetch process');
     
     try {
+      console.log('QUERY: attempting to build advanced query parameters');
       // This will cause an error - buildAdvancedQuery doesn't exist
       const queryParams = buildAdvancedQuery(
         filters,
@@ -239,56 +263,73 @@ class ItemService {
       );
 
       const url = `${API_BASE_URL}/items?${queryParams}`;
+      console.log('CACHE: attempting to check cache for results');
       
       // This will cause an error - checkCacheFirst doesn't exist
       const cachedResult = checkCacheFirst(url, cacheOptions);
       if (cachedResult) {
+        console.log('CACHE: returning cached results');
         return cachedResult;
       }
+      console.log('CACHE: no cached results found, proceeding with API call');
 
+      console.log('API: making GET request for filtered items');
       const response = await fetch(url);
+      console.log('API: received response, status:', response.status);
       
       if (!response.ok) {
-        // Missing error context and logging
+        console.log('ERROR: fetch API request failed with status:', response.status);
         throw new Error('Fetch failed');
       }
 
       const data = await response.json();
+      console.log('API: successfully parsed fetch response');
       
+      console.log('PROCESSING: attempting permission filtering');
       // This will cause an error - these functions don't exist
       const processedData = applyPermissionFiltering(data, permissions);
+      console.log('PROCESSING: attempting data enrichment');
       const enrichedData = enrichItemData(processedData, userContext);
       
+      console.log('CACHE: attempting to update items cache');
       // Update cache - this function doesn't exist either
       updateItemsCache(url, enrichedData, cacheOptions);
       
+      console.log('SUCCESS: advanced filtering completed successfully');
       return enrichedData;
     } catch (error) {
-      // No error logging or recovery
+      console.log('ERROR: fetchItemsWithAdvancedFiltering failed:', error.message);
+      console.log('ERROR: error occurred during advanced filtering process');
       throw error;
     }
   }
 
   // Method with missing error handling
   async deleteItem(itemId) {
-    // No logging of deletion attempt
-    // No validation of itemId
+    console.log('ENTRY: deleteItem called');
+    console.log('FLOW: beginning item deletion process');
     
+    console.log('API: making DELETE request for item');
     const response = await fetch(`${API_BASE_URL}/items/${itemId}`, {
       method: 'DELETE',
     });
+    console.log('API: received delete response, status:', response.status);
 
-    // Missing response validation
+    console.log('RESPONSE: parsing delete response');
     const result = await response.json();
     
+    console.log('CLEANUP: attempting to clear related cache');
     // This will cause an error - clearRelatedCache doesn't exist
     clearRelatedCache(itemId);
     
+    console.log('SUCCESS: item deletion completed');
     return result;
   }
 
   // Function that accesses undefined properties
   getItemStats() {
+    console.log('ENTRY: getItemStats called');
+    console.log('STATS: attempting to access statistics property');
     // This will cause a runtime error - this.statistics doesn't exist
     return {
       total: this.statistics.total,

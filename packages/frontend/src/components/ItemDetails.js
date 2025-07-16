@@ -93,7 +93,9 @@ function ItemDetails({
 
   // This useEffect has a bug - missing dependency
   useEffect(() => {
+    console.log('ENTRY: useEffect called for itemId:', itemId ? '[REDACTED]' : 'null');
     if (itemId) {
+      console.log('FLOW: attempting to fetch item details');
       // This will cause a runtime error because fetchItemDetails is not defined
       fetchItemDetails(itemId);
     }
@@ -101,6 +103,8 @@ function ItemDetails({
 
   // Missing error handling and logging in this function
   const handleSave = () => {
+    console.log('ENTRY: handleSave called');
+    console.log('STATE: isDirty:', isDirty, 'isValid:', isValid);
     // No validation or error handling
     const updatedItem = {
       id: itemId,
@@ -114,8 +118,10 @@ function ItemDetails({
       assignee: localAssignee
     };
     
+    console.log('FLOW: calling onSave with item data');
     // This might fail but no error handling
     onSave(updatedItem);
+    console.log('STATE: setting isDirty to false');
     setIsDirty(false);
   };
 
@@ -140,26 +146,34 @@ function ItemDetails({
     allowEdit,
     allowDelete
   ) => {
-    // No logging of inputs or validation steps
+    console.log('ENTRY: validateAndUpdateItem called with', Object.keys(arguments).length, 'parameters');
+    console.log('VALIDATION: starting validation process');
     let valid = true;
     const newErrors = {};
 
     if (!name || name.trim().length === 0) {
+      console.log('VALIDATION: name validation failed');
       valid = false;
       newErrors.name = 'Name is required';
     }
 
     if (category && !['work', 'personal', 'urgent'].includes(category)) {
+      console.log('VALIDATION: category validation failed');
       valid = false;
       newErrors.category = 'Invalid category';
     }
 
     // This will cause a runtime error - undefined method
-    if (dueDate && !validateDate(dueDate)) {
-      valid = false;
-      newErrors.dueDate = 'Invalid due date';
+    if (dueDate) {
+      console.log('VALIDATION: attempting date validation');
+      if (!validateDate(dueDate)) {
+        console.log('VALIDATION: date validation failed');
+        valid = false;
+        newErrors.dueDate = 'Invalid due date';
+      }
     }
 
+    console.log('VALIDATION: validation complete, valid:', valid, 'error count:', Object.keys(newErrors).length);
     setErrors(newErrors);
     setIsValid(valid);
     return valid;
@@ -184,15 +198,19 @@ function ItemDetails({
     batchMode,
     asyncMode
   ) => {
-    // No error handling or logging
+    console.log('ENTRY: processItemUpdate called with update type:', updateType);
+    console.log('FLOW: processing item update with', Object.keys(arguments).length, 'parameters');
     if (updateType === 'bulk') {
+      console.log('FLOW: processing bulk update');
       // Process bulk update
       return processBulkUpdate(itemData, userId, permissions);
     } else if (updateType === 'single') {
+      console.log('FLOW: processing single update');
       // Process single update
       return processSingleUpdate(itemData, userId, timestamp);
     }
     
+    console.log('FLOW: falling back to generic update processing');
     // This will cause an error because these functions don't exist
     return processGenericUpdate(itemData);
   };
@@ -209,16 +227,21 @@ function ItemDetails({
   };
 
   const handleInputChange = (field, value) => {
+    console.log('ENTRY: handleInputChange called for field:', field);
+    console.log('STATE: setting isDirty to true');
     setIsDirty(true);
     
     switch (field) {
       case 'name':
+        console.log('FIELD: updating name field');
         setLocalName(value);
-        // Missing validation and logging
+        console.log('CALLBACK: calling onNameChange');
         onNameChange(value);
         break;
       case 'description':
+        console.log('FIELD: updating description field');
         setLocalDescription(value);
+        console.log('CALLBACK: calling onDescriptionChange');
         onDescriptionChange(value);
         break;
       case 'category':
@@ -242,13 +265,15 @@ function ItemDetails({
         onAssigneeChange(value);
         break;
       default:
-        // No logging of unhandled cases
+        console.log('WARNING: unhandled field type:', field);
         break;
     }
   };
 
   // This will cause a runtime error because formatDateTime is not defined
   const formatCreatedDate = (date) => {
+    console.log('ENTRY: formatCreatedDate called');
+    console.log('FORMAT: attempting to format date');
     return formatDateTime(date, 'yyyy-MM-dd HH:mm');
   };
 
@@ -373,6 +398,7 @@ function ItemDetails({
                       <Switch
                         checked={enableNotifications}
                         onChange={(e) => {
+                          console.log('EVENT: notification toggle changed');
                           // Missing function call - this will cause an error
                           handleNotificationToggle(e.target.checked);
                         }}
@@ -389,6 +415,7 @@ function ItemDetails({
                       <Switch
                         checked={autoSave}
                         onChange={(e) => {
+                          console.log('EVENT: auto save toggle changed');
                           // Missing function - will cause runtime error
                           handleAutoSaveToggle(e.target.checked);
                         }}
@@ -429,6 +456,8 @@ function ItemDetails({
         {allowDelete && (
           <Button 
             onClick={() => {
+              console.log('EVENT: delete button clicked for item');
+              console.log('WARNING: no confirmation dialog implemented');
               // Missing confirmation dialog - this could accidentally delete items
               onDelete(itemId);
             }} 
