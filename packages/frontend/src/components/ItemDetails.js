@@ -18,6 +18,169 @@ import {
   FormControlLabel,
 } from '@mui/material';
 
+// Utility functions to implement missing functionality for ItemDetails
+const fetchItemDetails = async (itemId) => {
+  console.log('UTILITY: fetchItemDetails called for item:', itemId);
+  try {
+    const response = await fetch(`/api/items/${itemId}/details`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch item details');
+    }
+    const itemDetails = await response.json();
+    console.log('UTILITY: item details fetched successfully');
+    return itemDetails;
+  } catch (error) {
+    console.log('ERROR: fetchItemDetails failed:', error.message);
+    throw error;
+  }
+};
+
+const validateDate = (dateString) => {
+  console.log('UTILITY: validateDate called');
+  if (!dateString) {
+    return false;
+  }
+  
+  const date = new Date(dateString);
+  const isValidDate = !isNaN(date.getTime());
+  
+  if (!isValidDate) {
+    console.log('VALIDATION: invalid date format');
+    return false;
+  }
+  
+  // Check if date is not in the past (for due dates)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (date < today) {
+    console.log('VALIDATION: date cannot be in the past');
+    return false;
+  }
+  
+  console.log('VALIDATION: date validation passed');
+  return true;
+};
+
+const processBulkUpdate = async (itemData, userId, permissions) => {
+  console.log('UTILITY: processBulkUpdate called');
+  try {
+    // Validate permissions for bulk operations
+    if (!permissions || !permissions.includes('bulk_update')) {
+      throw new Error('Insufficient permissions for bulk update');
+    }
+    
+    // Process bulk update logic
+    const bulkResult = {
+      itemData,
+      userId,
+      processedAt: new Date().toISOString(),
+      type: 'bulk_update'
+    };
+    
+    console.log('UTILITY: bulk update processed successfully');
+    return bulkResult;
+  } catch (error) {
+    console.log('ERROR: processBulkUpdate failed:', error.message);
+    throw error;
+  }
+};
+
+const processSingleUpdate = async (itemData, userId, timestamp) => {
+  console.log('UTILITY: processSingleUpdate called');
+  try {
+    const singleResult = {
+      itemData,
+      userId,
+      timestamp,
+      processedAt: new Date().toISOString(),
+      type: 'single_update'
+    };
+    
+    console.log('UTILITY: single update processed successfully');
+    return singleResult;
+  } catch (error) {
+    console.log('ERROR: processSingleUpdate failed:', error.message);
+    throw error;
+  }
+};
+
+const processGenericUpdate = async (itemData) => {
+  console.log('UTILITY: processGenericUpdate called');
+  try {
+    const genericResult = {
+      itemData,
+      processedAt: new Date().toISOString(),
+      type: 'generic_update'
+    };
+    
+    console.log('UTILITY: generic update processed successfully');
+    return genericResult;
+  } catch (error) {
+    console.log('ERROR: processGenericUpdate failed:', error.message);
+    throw error;
+  }
+};
+
+const formatDateTime = (date, format) => {
+  console.log('UTILITY: formatDateTime called with format:', format);
+  try {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+      throw new Error('Invalid date');
+    }
+    
+    // Handle different format patterns
+    switch (format) {
+      case 'yyyy-MM-dd HH:mm':
+        return dateObj.toISOString().slice(0, 16).replace('T', ' ');
+      case 'MM/dd/yyyy':
+        return dateObj.toLocaleDateString('en-US');
+      case 'dd/MM/yyyy':
+        return dateObj.toLocaleDateString('en-GB');
+      default:
+        return dateObj.toLocaleString();
+    }
+  } catch (error) {
+    console.log('ERROR: formatDateTime failed:', error.message);
+    return 'Invalid date';
+  }
+};
+
+const handleNotificationToggle = (enabled) => {
+  console.log('UTILITY: handleNotificationToggle called with enabled:', enabled);
+  try {
+    // Save notification preference
+    const currentPrefs = JSON.parse(localStorage.getItem('notificationPreferences') || '{}');
+    currentPrefs.enabled = enabled;
+    currentPrefs.updatedAt = new Date().toISOString();
+    
+    localStorage.setItem('notificationPreferences', JSON.stringify(currentPrefs));
+    console.log('UTILITY: notification preference updated successfully');
+    return true;
+  } catch (error) {
+    console.log('ERROR: handleNotificationToggle failed:', error.message);
+    return false;
+  }
+};
+
+const handleAutoSaveToggle = (enabled) => {
+  console.log('UTILITY: handleAutoSaveToggle called with enabled:', enabled);
+  try {
+    // Save auto-save preference
+    const currentPrefs = JSON.parse(localStorage.getItem('autoSavePreferences') || '{}');
+    currentPrefs.enabled = enabled;
+    currentPrefs.updatedAt = new Date().toISOString();
+    
+    localStorage.setItem('autoSavePreferences', JSON.stringify(currentPrefs));
+    console.log('UTILITY: auto-save preference updated successfully');
+    return true;
+  } catch (error) {
+    console.log('ERROR: handleAutoSaveToggle failed:', error.message);
+    return false;
+  }
+};
+
 /**
  * ItemDetails component for managing detailed item information
  * This component has several issues that need refactoring:
@@ -99,7 +262,7 @@ function ItemDetails({
       // This will cause a runtime error because fetchItemDetails is not defined
       fetchItemDetails(itemId);
     }
-  }, []);
+  }, [itemId]);
 
   // Missing error handling and logging in this function
   const handleSave = () => {

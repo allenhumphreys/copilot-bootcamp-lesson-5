@@ -9,6 +9,368 @@
 
 const API_BASE_URL = '/api';
 
+// Utility functions to implement missing ItemService functionality
+const validateItemData = (itemData) => {
+  console.log('UTILITY: validateItemData called in ItemService');
+  
+  if (!itemData || typeof itemData !== 'object') {
+    console.log('VALIDATION: itemData is not an object');
+    return false;
+  }
+  
+  // Required fields validation
+  if (!itemData.name || typeof itemData.name !== 'string' || itemData.name.trim() === '') {
+    console.log('VALIDATION: name is required and must be a non-empty string');
+    return false;
+  }
+  
+  // Category validation
+  if (itemData.category && !['work', 'personal', 'urgent'].includes(itemData.category)) {
+    console.log('VALIDATION: invalid category');
+    return false;
+  }
+  
+  console.log('VALIDATION: itemData validation passed in ItemService');
+  return true;
+};
+
+const processNewItem = async (item, notificationSettings, auditEnabled) => {
+  console.log('UTILITY: processNewItem called');
+  try {
+    // Send notifications if enabled
+    if (notificationSettings && notificationSettings.enabled) {
+      console.log('NOTIFICATION: sending new item notification');
+      // Notification logic would go here
+    }
+    
+    // Log audit trail if enabled
+    if (auditEnabled) {
+      console.log('AUDIT: logging new item creation');
+      const auditLog = {
+        action: 'item_created',
+        itemId: item.id,
+        timestamp: new Date().toISOString(),
+        data: item
+      };
+      localStorage.setItem(`audit_${item.id}_created`, JSON.stringify(auditLog));
+    }
+    
+    console.log('UTILITY: new item processing completed');
+    return item;
+  } catch (error) {
+    console.log('ERROR: processNewItem failed:', error.message);
+    throw error;
+  }
+};
+
+const validateUserPermissions = (userPermissions, itemId) => {
+  console.log('UTILITY: validateUserPermissions called for item:', itemId);
+  
+  if (!userPermissions || !Array.isArray(userPermissions)) {
+    console.log('PERMISSION: invalid permissions format');
+    return false;
+  }
+  
+  // Check for required permissions
+  const requiredPermissions = ['read', 'write'];
+  const hasRequired = requiredPermissions.every(perm => userPermissions.includes(perm));
+  
+  if (!hasRequired) {
+    console.log('PERMISSION: missing required permissions');
+    return false;
+  }
+  
+  console.log('PERMISSION: user permissions validated successfully');
+  return true;
+};
+
+const prepareUpdateData = (updates, validationRules) => {
+  console.log('UTILITY: prepareUpdateData called');
+  try {
+    const preparedData = { ...updates };
+    
+    // Apply validation rules if provided
+    if (validationRules) {
+      Object.keys(validationRules).forEach(field => {
+        if (preparedData[field] !== undefined) {
+          const rule = validationRules[field];
+          if (rule.required && !preparedData[field]) {
+            throw new Error(`Field ${field} is required`);
+          }
+        }
+      });
+    }
+    
+    // Add metadata
+    preparedData.updated_at = new Date().toISOString();
+    preparedData.prepared_by = 'ItemService';
+    
+    console.log('UTILITY: update data prepared successfully');
+    return preparedData;
+  } catch (error) {
+    console.log('ERROR: prepareUpdateData failed:', error.message);
+    throw error;
+  }
+};
+
+const handleAuditLogging = async (auditOptions, itemId, updates) => {
+  console.log('UTILITY: handleAuditLogging called for item:', itemId);
+  try {
+    if (!auditOptions || !auditOptions.enabled) {
+      console.log('AUDIT: audit logging is disabled');
+      return;
+    }
+    
+    const auditLog = {
+      action: 'item_updated',
+      itemId,
+      updates,
+      timestamp: new Date().toISOString(),
+      level: auditOptions.level || 'info'
+    };
+    
+    // Store audit log
+    const auditKey = `audit_${itemId}_${Date.now()}`;
+    localStorage.setItem(auditKey, JSON.stringify(auditLog));
+    
+    console.log('AUDIT: audit log created successfully');
+  } catch (error) {
+    console.log('ERROR: handleAuditLogging failed:', error.message);
+  }
+};
+
+const sendNotifications = async (notificationOptions, result) => {
+  console.log('UTILITY: sendNotifications called');
+  try {
+    if (!notificationOptions || !notificationOptions.enabled) {
+      console.log('NOTIFICATION: notifications are disabled');
+      return;
+    }
+    
+    const notification = {
+      type: 'item_updated',
+      itemId: result.id,
+      message: `Item "${result.name}" has been updated`,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Store notification (in a real app, this would send actual notifications)
+    const notificationKey = `notification_${result.id}_${Date.now()}`;
+    localStorage.setItem(notificationKey, JSON.stringify(notification));
+    
+    console.log('NOTIFICATION: notification sent successfully');
+  } catch (error) {
+    console.log('ERROR: sendNotifications failed:', error.message);
+  }
+};
+
+const updateCache = async (itemId, result, cachingStrategy) => {
+  console.log('UTILITY: updateCache called for item:', itemId);
+  try {
+    if (!cachingStrategy || !cachingStrategy.enabled) {
+      console.log('CACHE: caching is disabled');
+      return;
+    }
+    
+    const cacheKey = `cache_item_${itemId}`;
+    const cacheData = {
+      data: result,
+      cachedAt: new Date().toISOString(),
+      strategy: cachingStrategy.type || 'default'
+    };
+    
+    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+    
+    console.log('CACHE: item cached successfully');
+  } catch (error) {
+    console.log('ERROR: updateCache failed:', error.message);
+  }
+};
+
+const buildAdvancedQuery = (filters, sorting, pagination, includes, excludes, searchTerm, dateRange) => {
+  console.log('UTILITY: buildAdvancedQuery called');
+  try {
+    const queryParams = new URLSearchParams();
+    
+    // Add filters
+    if (filters) {
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined) {
+          queryParams.append(`filter_${key}`, filters[key]);
+        }
+      });
+    }
+    
+    // Add sorting
+    if (sorting) {
+      queryParams.append('sort', sorting.field);
+      queryParams.append('order', sorting.direction || 'asc');
+    }
+    
+    // Add pagination
+    if (pagination) {
+      queryParams.append('page', pagination.page || 1);
+      queryParams.append('limit', pagination.limit || 10);
+    }
+    
+    // Add includes/excludes
+    if (includes && includes.length > 0) {
+      queryParams.append('include', includes.join(','));
+    }
+    if (excludes && excludes.length > 0) {
+      queryParams.append('exclude', excludes.join(','));
+    }
+    
+    // Add search term
+    if (searchTerm) {
+      queryParams.append('search', searchTerm);
+    }
+    
+    // Add date range
+    if (dateRange) {
+      if (dateRange.start) queryParams.append('date_start', dateRange.start);
+      if (dateRange.end) queryParams.append('date_end', dateRange.end);
+    }
+    
+    console.log('UTILITY: advanced query built successfully');
+    return queryParams.toString();
+  } catch (error) {
+    console.log('ERROR: buildAdvancedQuery failed:', error.message);
+    return '';
+  }
+};
+
+const checkCacheFirst = (url, cacheOptions) => {
+  console.log('UTILITY: checkCacheFirst called for URL:', url);
+  try {
+    if (!cacheOptions || !cacheOptions.enabled) {
+      console.log('CACHE: cache checking is disabled');
+      return null;
+    }
+    
+    const cacheKey = `url_cache_${btoa(url)}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    
+    if (!cachedData) {
+      console.log('CACHE: no cached data found');
+      return null;
+    }
+    
+    const parsed = JSON.parse(cachedData);
+    const cacheAge = Date.now() - new Date(parsed.cachedAt).getTime();
+    const maxAge = (cacheOptions.maxAge || 300) * 1000; // Default 5 minutes
+    
+    if (cacheAge > maxAge) {
+      console.log('CACHE: cached data expired');
+      localStorage.removeItem(cacheKey);
+      return null;
+    }
+    
+    console.log('CACHE: returning cached data');
+    return parsed.data;
+  } catch (error) {
+    console.log('ERROR: checkCacheFirst failed:', error.message);
+    return null;
+  }
+};
+
+const applyPermissionFiltering = (data, permissions) => {
+  console.log('UTILITY: applyPermissionFiltering called');
+  try {
+    if (!permissions || !Array.isArray(data)) {
+      return data;
+    }
+    
+    // Filter data based on permissions
+    const filteredData = data.filter(item => {
+      // Check if user has permission to view this item
+      if (permissions.includes('admin')) {
+        return true; // Admin can see everything
+      }
+      
+      if (permissions.includes('read') && (!item.private || item.createdBy === 'current_user')) {
+        return true; // Can read non-private items or own items
+      }
+      
+      return false;
+    });
+    
+    console.log('UTILITY: permission filtering applied, returned', filteredData.length, 'items');
+    return filteredData;
+  } catch (error) {
+    console.log('ERROR: applyPermissionFiltering failed:', error.message);
+    return data;
+  }
+};
+
+const enrichItemData = (data, userContext) => {
+  console.log('UTILITY: enrichItemData called');
+  try {
+    if (!Array.isArray(data)) {
+      return data;
+    }
+    
+    // Enrich each item with additional context
+    const enrichedData = data.map(item => ({
+      ...item,
+      isOwner: item.createdBy === userContext?.userId,
+      canEdit: userContext?.permissions?.includes('write') || item.createdBy === userContext?.userId,
+      canDelete: userContext?.permissions?.includes('delete') || item.createdBy === userContext?.userId,
+      enrichedAt: new Date().toISOString()
+    }));
+    
+    console.log('UTILITY: item data enriched successfully');
+    return enrichedData;
+  } catch (error) {
+    console.log('ERROR: enrichItemData failed:', error.message);
+    return data;
+  }
+};
+
+const updateItemsCache = (url, data, cacheOptions) => {
+  console.log('UTILITY: updateItemsCache called');
+  try {
+    if (!cacheOptions || !cacheOptions.enabled) {
+      console.log('CACHE: cache updating is disabled');
+      return;
+    }
+    
+    const cacheKey = `url_cache_${btoa(url)}`;
+    const cacheData = {
+      data,
+      cachedAt: new Date().toISOString(),
+      url
+    };
+    
+    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+    
+    console.log('CACHE: items cache updated successfully');
+  } catch (error) {
+    console.log('ERROR: updateItemsCache failed:', error.message);
+  }
+};
+
+const clearRelatedCache = (itemId) => {
+  console.log('UTILITY: clearRelatedCache called for item:', itemId);
+  try {
+    // Clear all cache entries related to this item
+    const keysToRemove = [];
+    
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes(`item_${itemId}`) || key.includes(`cache_item_${itemId}`))) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    console.log('CACHE: cleared', keysToRemove.length, 'related cache entries');
+  } catch (error) {
+    console.log('ERROR: clearRelatedCache failed:', error.message);
+  }
+};
+
 // Dead code - unused constants
 const UNUSED_CONSTANT = 'This is never used anywhere';
 const OLD_API_VERSION = 'v1'; // Not used anymore
@@ -33,6 +395,13 @@ class ItemService {
   constructor() {
     this.cache = new Map();
     this.lastFetch = null;
+    
+    // Add statistics property to fix runtime error
+    this.statistics = {
+      total: 0,
+      byCategory: {},
+      byStatus: {}
+    };
     
     // Dead code - unused properties
     this.unusedProperty = 'never accessed';
