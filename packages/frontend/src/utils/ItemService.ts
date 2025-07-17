@@ -1,16 +1,111 @@
 /**
  * ItemService - Service for managing item operations
- * This file contains multiple issues that need refactoring:
- * - Long parameter lists in functions
- * - Dead/unused code
- * - Missing error handling and logging
- * - Functions that will cause runtime errors
  */
 
 const API_BASE_URL = '/api';
 
+// Type definitions
+interface ItemData {
+  id?: number;
+  name: string;
+  description?: string;
+  category?: string;
+  priority?: string;
+  tags?: string[];
+  status?: string;
+  dueDate?: string;
+  assignee?: string;
+  createdBy?: string;
+  customFields?: Record<string, any>;
+  permissions?: string[];
+  validationLevel?: string;
+  notificationSettings?: Record<string, any>;
+  auditEnabled?: boolean;
+  backupEnabled?: boolean;
+  versionControl?: boolean | Record<string, any>;
+  metadata?: Record<string, any>;
+  attachments?: any[];
+  dependencies?: any[];
+  estimatedHours?: number;
+  actualHours?: number;
+  budget?: number;
+  currency?: string;
+  location?: string;
+  externalReferences?: any[];
+}
+
+interface CreateItemOptions {
+  name: string;
+  description?: string;
+  category?: string;
+  priority?: string;
+  tags?: string[];
+  status?: string;
+  dueDate?: string;
+  assignee?: string;
+  createdBy?: string;
+  customFields?: Record<string, any>;
+  permissions?: string[];
+  validationLevel?: string;
+  notificationSettings?: Record<string, any>;
+  auditEnabled?: boolean;
+  backupEnabled?: boolean;
+  versionControl?: boolean | Record<string, any>;
+  metadata?: Record<string, any>;
+  attachments?: any[];
+  dependencies?: any[];
+  estimatedHours?: number;
+  actualHours?: number;
+  budget?: number;
+  currency?: string;
+  location?: string;
+  externalReferences?: any[];
+}
+
+interface UpdateItemOptions {
+  itemId: number;
+  updates: Partial<ItemData>;
+  validationRules?: Record<string, any>;
+  userPermissions?: string[];
+  auditOptions?: Record<string, any>;
+  notificationOptions?: Record<string, any>;
+  backupOptions?: Record<string, any>;
+  versioningOptions?: Record<string, any>;
+  conflictResolution?: Record<string, any>;
+  retryPolicy?: Record<string, any>;
+  timeoutSettings?: Record<string, any>;
+  cachingStrategy?: Record<string, any>;
+  loggingLevel?: string;
+  performanceTracking?: boolean;
+  securityContext?: Record<string, any>;
+  transactionOptions?: Record<string, any>;
+  rollbackStrategy?: Record<string, any>;
+  successCallbacks?: Function[];
+  errorCallbacks?: Function[];
+  progressCallbacks?: Function[];
+}
+
+interface FetchItemsOptions {
+  filters?: Record<string, any>;
+  sorting?: Record<string, any>;
+  pagination?: Record<string, any>;
+  includes?: string[];
+  excludes?: string[];
+  searchTerm?: string;
+  dateRange?: Record<string, any>;
+  userContext?: Record<string, any>;
+  permissions?: string[];
+  cacheOptions?: Record<string, any>;
+}
+
+interface ItemServiceStats {
+  total: number;
+  byCategory: Record<string, number>;
+  byStatus: Record<string, number>;
+}
+
 // Utility functions to implement missing ItemService functionality
-const validateItemData = (itemData) => {
+const validateItemData = (itemData: ItemData): boolean => {
   console.log('UTILITY: validateItemData called in ItemService');
   
   if (!itemData || typeof itemData !== 'object') {
@@ -34,7 +129,7 @@ const validateItemData = (itemData) => {
   return true;
 };
 
-const processNewItem = async (item, notificationSettings, auditEnabled) => {
+const processNewItem = async (item: ItemData, notificationSettings: Record<string, any>, auditEnabled: boolean): Promise<ItemData> => {
   console.log('UTILITY: processNewItem called');
   try {
     // Send notifications if enabled
@@ -58,12 +153,12 @@ const processNewItem = async (item, notificationSettings, auditEnabled) => {
     console.log('UTILITY: new item processing completed');
     return item;
   } catch (error) {
-    console.log('ERROR: processNewItem failed:', error.message);
+    console.log('ERROR: processNewItem failed:', (error as Error).message);
     throw error;
   }
 };
 
-const validateUserPermissions = (userPermissions, itemId) => {
+const validateUserPermissions = (userPermissions: string[], itemId: number): boolean => {
   console.log('UTILITY: validateUserPermissions called for item:', itemId);
   
   if (!userPermissions || !Array.isArray(userPermissions)) {
@@ -84,7 +179,7 @@ const validateUserPermissions = (userPermissions, itemId) => {
   return true;
 };
 
-const prepareUpdateData = (updates, validationRules) => {
+const prepareUpdateData = (updates: Partial<ItemData>, validationRules: Record<string, any>): Partial<ItemData> => {
   console.log('UTILITY: prepareUpdateData called');
   try {
     const preparedData = { ...updates };
@@ -92,9 +187,9 @@ const prepareUpdateData = (updates, validationRules) => {
     // Apply validation rules if provided
     if (validationRules) {
       Object.keys(validationRules).forEach(field => {
-        if (preparedData[field] !== undefined) {
+        if (preparedData[field as keyof ItemData] !== undefined) {
           const rule = validationRules[field];
-          if (rule.required && !preparedData[field]) {
+          if (rule.required && !preparedData[field as keyof ItemData]) {
             throw new Error(`Field ${field} is required`);
           }
         }
@@ -102,18 +197,21 @@ const prepareUpdateData = (updates, validationRules) => {
     }
     
     // Add metadata
-    preparedData.updated_at = new Date().toISOString();
-    preparedData.prepared_by = 'ItemService';
+    const enhancedData = {
+      ...preparedData,
+      updated_at: new Date().toISOString(),
+      prepared_by: 'ItemService'
+    };
     
     console.log('UTILITY: update data prepared successfully');
-    return preparedData;
+    return enhancedData;
   } catch (error) {
-    console.log('ERROR: prepareUpdateData failed:', error.message);
+    console.log('ERROR: prepareUpdateData failed:', (error as Error).message);
     throw error;
   }
 };
 
-const handleAuditLogging = async (auditOptions, itemId, updates) => {
+const handleAuditLogging = async (auditOptions: Record<string, any>, itemId: number, updates: Partial<ItemData>): Promise<void> => {
   console.log('UTILITY: handleAuditLogging called for item:', itemId);
   try {
     if (!auditOptions || !auditOptions.enabled) {
@@ -135,11 +233,11 @@ const handleAuditLogging = async (auditOptions, itemId, updates) => {
     
     console.log('AUDIT: audit log created successfully');
   } catch (error) {
-    console.log('ERROR: handleAuditLogging failed:', error.message);
+    console.log('ERROR: handleAuditLogging failed:', (error as Error).message);
   }
 };
 
-const sendNotifications = async (notificationOptions, result) => {
+const sendNotifications = async (notificationOptions: Record<string, any>, result: ItemData): Promise<void> => {
   console.log('UTILITY: sendNotifications called');
   try {
     if (!notificationOptions || !notificationOptions.enabled) {
@@ -160,11 +258,11 @@ const sendNotifications = async (notificationOptions, result) => {
     
     console.log('NOTIFICATION: notification sent successfully');
   } catch (error) {
-    console.log('ERROR: sendNotifications failed:', error.message);
+    console.log('ERROR: sendNotifications failed:', (error as Error).message);
   }
 };
 
-const updateCache = async (itemId, result, cachingStrategy) => {
+const updateCache = async (itemId: number, result: ItemData, cachingStrategy: Record<string, any>): Promise<void> => {
   console.log('UTILITY: updateCache called for item:', itemId);
   try {
     if (!cachingStrategy || !cachingStrategy.enabled) {
@@ -183,11 +281,19 @@ const updateCache = async (itemId, result, cachingStrategy) => {
     
     console.log('CACHE: item cached successfully');
   } catch (error) {
-    console.log('ERROR: updateCache failed:', error.message);
+    console.log('ERROR: updateCache failed:', (error as Error).message);
   }
 };
 
-const buildAdvancedQuery = (filters, sorting, pagination, includes, excludes, searchTerm, dateRange) => {
+const buildAdvancedQuery = (
+  filters: Record<string, any>, 
+  sorting: Record<string, any>, 
+  pagination: Record<string, any>, 
+  includes: string[], 
+  excludes: string[], 
+  searchTerm: string, 
+  dateRange: Record<string, any>
+): string => {
   console.log('UTILITY: buildAdvancedQuery called');
   try {
     const queryParams = new URLSearchParams();
@@ -235,12 +341,12 @@ const buildAdvancedQuery = (filters, sorting, pagination, includes, excludes, se
     console.log('UTILITY: advanced query built successfully');
     return queryParams.toString();
   } catch (error) {
-    console.log('ERROR: buildAdvancedQuery failed:', error.message);
+    console.log('ERROR: buildAdvancedQuery failed:', (error as Error).message);
     return '';
   }
 };
 
-const checkCacheFirst = (url, cacheOptions) => {
+const checkCacheFirst = (url: string, cacheOptions: Record<string, any>): any => {
   console.log('UTILITY: checkCacheFirst called for URL:', url);
   try {
     if (!cacheOptions || !cacheOptions.enabled) {
@@ -269,12 +375,12 @@ const checkCacheFirst = (url, cacheOptions) => {
     console.log('CACHE: returning cached data');
     return parsed.data;
   } catch (error) {
-    console.log('ERROR: checkCacheFirst failed:', error.message);
+    console.log('ERROR: checkCacheFirst failed:', (error as Error).message);
     return null;
   }
 };
 
-const applyPermissionFiltering = (data, permissions) => {
+const applyPermissionFiltering = (data: any[], permissions: string[]): any[] => {
   console.log('UTILITY: applyPermissionFiltering called');
   try {
     if (!permissions || !Array.isArray(data)) {
@@ -298,12 +404,12 @@ const applyPermissionFiltering = (data, permissions) => {
     console.log('UTILITY: permission filtering applied, returned', filteredData.length, 'items');
     return filteredData;
   } catch (error) {
-    console.log('ERROR: applyPermissionFiltering failed:', error.message);
+    console.log('ERROR: applyPermissionFiltering failed:', (error as Error).message);
     return data;
   }
 };
 
-const enrichItemData = (data, userContext) => {
+const enrichItemData = (data: any[], userContext: Record<string, any>): any[] => {
   console.log('UTILITY: enrichItemData called');
   try {
     if (!Array.isArray(data)) {
@@ -322,12 +428,12 @@ const enrichItemData = (data, userContext) => {
     console.log('UTILITY: item data enriched successfully');
     return enrichedData;
   } catch (error) {
-    console.log('ERROR: enrichItemData failed:', error.message);
+    console.log('ERROR: enrichItemData failed:', (error as Error).message);
     return data;
   }
 };
 
-const updateItemsCache = (url, data, cacheOptions) => {
+const updateItemsCache = (url: string, data: any[], cacheOptions: Record<string, any>): void => {
   console.log('UTILITY: updateItemsCache called');
   try {
     if (!cacheOptions || !cacheOptions.enabled) {
@@ -346,15 +452,15 @@ const updateItemsCache = (url, data, cacheOptions) => {
     
     console.log('CACHE: items cache updated successfully');
   } catch (error) {
-    console.log('ERROR: updateItemsCache failed:', error.message);
+    console.log('ERROR: updateItemsCache failed:', (error as Error).message);
   }
 };
 
-const clearRelatedCache = (itemId) => {
+const clearRelatedCache = (itemId: number): void => {
   console.log('UTILITY: clearRelatedCache called for item:', itemId);
   try {
     // Clear all cache entries related to this item
-    const keysToRemove = [];
+    const keysToRemove: string[] = [];
     
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -367,13 +473,15 @@ const clearRelatedCache = (itemId) => {
     
     console.log('CACHE: cleared', keysToRemove.length, 'related cache entries');
   } catch (error) {
-    console.log('ERROR: clearRelatedCache failed:', error.message);
+    console.log('ERROR: clearRelatedCache failed:', (error as Error).message);
   }
 };
 
-
-
 class ItemService {
+  private cache: Map<string, any>;
+  private lastFetch: Date | null;
+  private statistics: ItemServiceStats;
+
   constructor() {
     this.cache = new Map();
     this.lastFetch = null;
@@ -384,11 +492,10 @@ class ItemService {
       byCategory: {},
       byStatus: {}
     };
-    
   }
 
   // Function with too many parameters that should be refactored to use an options object
-  async createItemWithDetails(options = {}) {
+  async createItemWithDetails(options: CreateItemOptions): Promise<ItemData> {
     const {
       name,
       description,
@@ -422,7 +529,7 @@ class ItemService {
     
     try {
       console.log('VALIDATION: preparing item data object');
-      const itemData = {
+      const itemData: ItemData = {
         name,
         description,
         category,
@@ -483,14 +590,14 @@ class ItemService {
       console.log('SUCCESS: item creation completed successfully');
       return result;
     } catch (error) {
-      console.log('ERROR: createItemWithDetails failed:', error.message);
+      console.log('ERROR: createItemWithDetails failed:', (error as Error).message);
       console.log('ERROR: error occurred during item creation process');
       throw error;
     }
   }
 
   // Another function with too many parameters
-  async updateItemWithValidation(options = {}) {
+  async updateItemWithValidation(options: UpdateItemOptions): Promise<ItemData> {
     const {
       itemId,
       updates,
@@ -560,15 +667,14 @@ class ItemService {
       console.log('SUCCESS: item update completed successfully');
       return result;
     } catch (error) {
-      console.log('ERROR: updateItemWithValidation failed:', error.message);
+      console.log('ERROR: updateItemWithValidation failed:', (error as Error).message);
       console.log('ERROR: error occurred during item update process');
       throw error;
     }
   }
 
-
   // Function that will cause runtime errors
-  async fetchItemsWithAdvancedFiltering(options = {}) {
+  async fetchItemsWithAdvancedFiltering(options: FetchItemsOptions): Promise<any[]> {
     const {
       filters = {},
       sorting = {},
@@ -634,14 +740,14 @@ class ItemService {
       console.log('SUCCESS: advanced filtering completed successfully');
       return enrichedData;
     } catch (error) {
-      console.log('ERROR: fetchItemsWithAdvancedFiltering failed:', error.message);
+      console.log('ERROR: fetchItemsWithAdvancedFiltering failed:', (error as Error).message);
       console.log('ERROR: error occurred during advanced filtering process');
       throw error;
     }
   }
 
   // Method with missing error handling
-  async deleteItem(itemId) {
+  async deleteItem(itemId: number): Promise<any> {
     console.log('ENTRY: deleteItem called');
     console.log('FLOW: beginning item deletion process');
     
@@ -663,7 +769,7 @@ class ItemService {
   }
 
   // Function that accesses undefined properties
-  getItemStats() {
+  getItemStats(): ItemServiceStats {
     console.log('ENTRY: getItemStats called');
     console.log('STATS: attempting to access statistics property');
     // This will cause a runtime error - this.statistics doesn't exist
@@ -673,8 +779,6 @@ class ItemService {
       byStatus: this.statistics.byStatus
     };
   }
-
 }
-
 
 export default ItemService;

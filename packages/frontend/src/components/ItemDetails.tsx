@@ -9,7 +9,6 @@ import {
   Grid,
   Typography,
   Box,
-  Chip,
   FormControl,
   InputLabel,
   Select,
@@ -18,8 +17,112 @@ import {
   FormControlLabel,
 } from '@mui/material';
 
+// Type definitions
+interface ItemDetailsProps {
+  open: boolean;
+  onClose: () => void;
+  itemId?: number | null;
+  itemName?: string;
+  itemDescription?: string;
+  itemCategory?: string;
+  itemPriority?: string;
+  itemTags?: string[];
+  itemStatus?: string;
+  itemDueDate?: string;
+  itemAssignee?: string;
+  itemCreatedBy?: string;
+  itemCreatedAt?: string;
+  itemUpdatedAt?: string;
+  showAdvanced?: boolean;
+  enableNotifications?: boolean;
+  autoSave?: boolean;
+  readOnly?: boolean;
+  onSave?: (item: ItemData) => void;
+  onDelete?: (id: number) => void;
+  onUpdate?: (data: ItemData) => void;
+  onStatusChange?: (status: string) => void;
+  onPriorityChange?: (priority: string) => void;
+  onCategoryChange?: (category: string) => void;
+  onTagsChange?: (tags: string[]) => void;
+  onAssigneeChange?: (assignee: string) => void;
+  onDueDateChange?: (date: string) => void;
+  onDescriptionChange?: (desc: string) => void;
+  onNameChange?: (name: string) => void;
+  allowEdit?: boolean;
+  allowDelete?: boolean;
+  showHistory?: boolean;
+  historyData?: any[];
+  validationRules?: Record<string, any>;
+  customFields?: Record<string, any>;
+  permissions?: string[];
+}
+
+interface ItemData {
+  id?: number;
+  name: string;
+  description?: string;
+  category?: string;
+  priority?: string;
+  tags?: string[];
+  status?: string;
+  dueDate?: string;
+  assignee?: string;
+}
+
+interface ValidationOptions {
+  name?: string;
+  description?: string;
+  category?: string;
+  priority?: string;
+  tags?: string[];
+  status?: string;
+  dueDate?: string;
+  assignee?: string;
+  createdBy?: string;
+  permissions?: string[];
+  validationRules?: Record<string, any>;
+  customFields?: Record<string, any>;
+  showAdvanced?: boolean;
+  enableNotifications?: boolean;
+  autoSave?: boolean;
+  readOnly?: boolean;
+  allowEdit?: boolean;
+  allowDelete?: boolean;
+}
+
+interface ProcessUpdateOptions {
+  itemData: ItemData;
+  updateType: 'bulk' | 'single' | 'generic';
+  timestamp?: string;
+  userId?: string;
+  userRole?: string;
+  permissions?: string[];
+  validationLevel?: string;
+  notificationSettings?: Record<string, any>;
+  auditEnabled?: boolean;
+  backupEnabled?: boolean;
+  versionControl?: Record<string, any>;
+  conflictResolution?: Record<string, any>;
+  retryCount?: number;
+  timeout?: number;
+  batchMode?: boolean;
+  asyncMode?: boolean;
+}
+
+interface BulkUpdateOptions {
+  itemData: ItemData;
+  userId?: string;
+  permissions?: string[];
+}
+
+interface SingleUpdateOptions {
+  itemData: ItemData;
+  userId?: string;
+  timestamp?: string;
+}
+
 // Utility functions to implement missing functionality for ItemDetails
-const fetchItemDetails = async (itemId) => {
+const fetchItemDetails = async (itemId: number): Promise<any> => {
   console.log('UTILITY: fetchItemDetails called for item:', itemId);
   try {
     const response = await fetch(`/api/items/${itemId}/details`);
@@ -30,12 +133,12 @@ const fetchItemDetails = async (itemId) => {
     console.log('UTILITY: item details fetched successfully');
     return itemDetails;
   } catch (error) {
-    console.log('ERROR: fetchItemDetails failed:', error.message);
+    console.log('ERROR: fetchItemDetails failed:', (error as Error).message);
     throw error;
   }
 };
 
-const validateDate = (dateString) => {
+const validateDate = (dateString: string): boolean => {
   console.log('UTILITY: validateDate called');
   if (!dateString) {
     return false;
@@ -62,7 +165,7 @@ const validateDate = (dateString) => {
   return true;
 };
 
-const processBulkUpdate = async (options = {}) => {
+const processBulkUpdate = async (options: BulkUpdateOptions): Promise<any> => {
   const {
     itemData,
     userId,
@@ -87,12 +190,12 @@ const processBulkUpdate = async (options = {}) => {
     console.log('UTILITY: bulk update processed successfully');
     return bulkResult;
   } catch (error) {
-    console.log('ERROR: processBulkUpdate failed:', error.message);
+    console.log('ERROR: processBulkUpdate failed:', (error as Error).message);
     throw error;
   }
 };
 
-const processSingleUpdate = async (options = {}) => {
+const processSingleUpdate = async (options: SingleUpdateOptions): Promise<any> => {
   const {
     itemData,
     userId,
@@ -112,12 +215,12 @@ const processSingleUpdate = async (options = {}) => {
     console.log('UTILITY: single update processed successfully');
     return singleResult;
   } catch (error) {
-    console.log('ERROR: processSingleUpdate failed:', error.message);
+    console.log('ERROR: processSingleUpdate failed:', (error as Error).message);
     throw error;
   }
 };
 
-const processGenericUpdate = async (itemData) => {
+const processGenericUpdate = async (itemData: ItemData): Promise<any> => {
   console.log('UTILITY: processGenericUpdate called');
   try {
     const genericResult = {
@@ -129,12 +232,12 @@ const processGenericUpdate = async (itemData) => {
     console.log('UTILITY: generic update processed successfully');
     return genericResult;
   } catch (error) {
-    console.log('ERROR: processGenericUpdate failed:', error.message);
+    console.log('ERROR: processGenericUpdate failed:', (error as Error).message);
     throw error;
   }
 };
 
-const formatDateTime = (date, format) => {
+const formatDateTime = (date: string, format: string): string => {
   console.log('UTILITY: formatDateTime called with format:', format);
   try {
     const dateObj = new Date(date);
@@ -154,12 +257,12 @@ const formatDateTime = (date, format) => {
         return dateObj.toLocaleString();
     }
   } catch (error) {
-    console.log('ERROR: formatDateTime failed:', error.message);
+    console.log('ERROR: formatDateTime failed:', (error as Error).message);
     return 'Invalid date';
   }
 };
 
-const handleNotificationToggle = (enabled) => {
+const handleNotificationToggle = (enabled: boolean): boolean => {
   console.log('UTILITY: handleNotificationToggle called with enabled:', enabled);
   try {
     // Save notification preference
@@ -171,12 +274,12 @@ const handleNotificationToggle = (enabled) => {
     console.log('UTILITY: notification preference updated successfully');
     return true;
   } catch (error) {
-    console.log('ERROR: handleNotificationToggle failed:', error.message);
+    console.log('ERROR: handleNotificationToggle failed:', (error as Error).message);
     return false;
   }
 };
 
-const handleAutoSaveToggle = (enabled) => {
+const handleAutoSaveToggle = (enabled: boolean): boolean => {
   console.log('UTILITY: handleAutoSaveToggle called with enabled:', enabled);
   try {
     // Save auto-save preference
@@ -188,18 +291,13 @@ const handleAutoSaveToggle = (enabled) => {
     console.log('UTILITY: auto-save preference updated successfully');
     return true;
   } catch (error) {
-    console.log('ERROR: handleAutoSaveToggle failed:', error.message);
+    console.log('ERROR: handleAutoSaveToggle failed:', (error as Error).message);
     return false;
   }
 };
 
 /**
  * ItemDetails component for managing detailed item information
- * This component has several issues that need refactoring:
- * - Long parameter lists
- * - Missing error handling and logging
- * - Dead code
- * - Runtime errors
  */
 function ItemDetails({ 
   open, 
@@ -216,10 +314,10 @@ function ItemDetails({
   itemCreatedBy,
   itemCreatedAt,
   itemUpdatedAt,
-  showAdvanced,
-  enableNotifications,
-  autoSave,
-  readOnly,
+  showAdvanced = false,
+  enableNotifications = false,
+  autoSave = false,
+  readOnly = false,
   onSave,
   onDelete,
   onUpdate,
@@ -231,26 +329,25 @@ function ItemDetails({
   onDueDateChange,
   onDescriptionChange,
   onNameChange,
-  allowEdit,
-  allowDelete,
-  showHistory,
-  historyData,
-  validationRules,
-  customFields,
-  permissions
-}) {
-  const [localName, setLocalName] = useState(itemName || '');
-  const [localDescription, setLocalDescription] = useState(itemDescription || '');
-  const [localCategory, setLocalCategory] = useState(itemCategory || '');
-  const [localPriority, setLocalPriority] = useState(itemPriority || 'medium');
-  const [localTags, setLocalTags] = useState(itemTags || []);
-  const [localStatus, setLocalStatus] = useState(itemStatus || 'active');
-  const [localDueDate, setLocalDueDate] = useState(itemDueDate || '');
-  const [localAssignee, setLocalAssignee] = useState(itemAssignee || '');
-  const [errors, setErrors] = useState({});
-  const [isValid, setIsValid] = useState(true);
-  const [isDirty, setIsDirty] = useState(false);
-
+  allowEdit = false,
+  allowDelete = false,
+  showHistory = false,
+  historyData = [],
+  validationRules = {},
+  customFields = {},
+  permissions = []
+}: ItemDetailsProps) {
+  const [localName, setLocalName] = useState<string>(itemName || '');
+  const [localDescription, setLocalDescription] = useState<string>(itemDescription || '');
+  const [localCategory, setLocalCategory] = useState<string>(itemCategory || '');
+  const [localPriority, setLocalPriority] = useState<string>(itemPriority || 'medium');
+  const [localTags, setLocalTags] = useState<string[]>(itemTags || []);
+  const [localStatus, setLocalStatus] = useState<string>(itemStatus || 'active');
+  const [localDueDate, setLocalDueDate] = useState<string>(itemDueDate || '');
+  const [localAssignee, setLocalAssignee] = useState<string>(itemAssignee || '');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isValid, setIsValid] = useState<boolean>(true);
+  const [isDirty, setIsDirty] = useState<boolean>(false);
 
   // This useEffect has a bug - missing dependency
   useEffect(() => {
@@ -263,12 +360,12 @@ function ItemDetails({
   }, [itemId]);
 
   // Missing error handling and logging in this function
-  const handleSave = () => {
+  const handleSave = (): void => {
     console.log('ENTRY: handleSave called');
     console.log('STATE: isDirty:', isDirty, 'isValid:', isValid);
     // No validation or error handling
-    const updatedItem = {
-      id: itemId,
+    const updatedItem: ItemData = {
+      id: itemId || undefined,
       name: localName,
       description: localDescription,
       category: localCategory,
@@ -281,13 +378,15 @@ function ItemDetails({
     
     console.log('FLOW: calling onSave with item data');
     // This might fail but no error handling
-    onSave(updatedItem);
+    if (onSave) {
+      onSave(updatedItem);
+    }
     console.log('STATE: setting isDirty to false');
     setIsDirty(false);
   };
 
   // Function with long parameter list that should be refactored
-  const validateAndUpdateItem = (options = {}) => {
+  const validateAndUpdateItem = (options: ValidationOptions = {}): boolean => {
     const {
       name,
       description, 
@@ -312,7 +411,7 @@ function ItemDetails({
     console.log('ENTRY: validateAndUpdateItem called with options object');
     console.log('VALIDATION: starting validation process');
     let valid = true;
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
 
     if (!name || name.trim().length === 0) {
       console.log('VALIDATION: name validation failed');
@@ -343,7 +442,7 @@ function ItemDetails({
   };
 
   // Another function with too many parameters
-  const processItemUpdate = (options = {}) => {
+  const processItemUpdate = (options: ProcessUpdateOptions): Promise<any> => {
     const {
       itemData,
       updateType,
@@ -380,8 +479,7 @@ function ItemDetails({
     return processGenericUpdate(itemData);
   };
 
-
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string): void => {
     console.log('ENTRY: handleInputChange called for field:', field);
     console.log('STATE: setting isDirty to true');
     setIsDirty(true);
@@ -391,33 +489,33 @@ function ItemDetails({
         console.log('FIELD: updating name field');
         setLocalName(value);
         console.log('CALLBACK: calling onNameChange');
-        onNameChange(value);
+        if (onNameChange) onNameChange(value);
         break;
       case 'description':
         console.log('FIELD: updating description field');
         setLocalDescription(value);
         console.log('CALLBACK: calling onDescriptionChange');
-        onDescriptionChange(value);
+        if (onDescriptionChange) onDescriptionChange(value);
         break;
       case 'category':
         setLocalCategory(value);
-        onCategoryChange(value);
+        if (onCategoryChange) onCategoryChange(value);
         break;
       case 'priority':
         setLocalPriority(value);
-        onPriorityChange(value);
+        if (onPriorityChange) onPriorityChange(value);
         break;
       case 'status':
         setLocalStatus(value);
-        onStatusChange(value);
+        if (onStatusChange) onStatusChange(value);
         break;
       case 'dueDate':
         setLocalDueDate(value);
-        onDueDateChange(value);
+        if (onDueDateChange) onDueDateChange(value);
         break;
       case 'assignee':
         setLocalAssignee(value);
-        onAssigneeChange(value);
+        if (onAssigneeChange) onAssigneeChange(value);
         break;
       default:
         console.log('WARNING: unhandled field type:', field);
@@ -426,7 +524,7 @@ function ItemDetails({
   };
 
   // This will cause a runtime error because formatDateTime is not defined
-  const formatCreatedDate = (date) => {
+  const formatCreatedDate = (date: string): string => {
     console.log('ENTRY: formatCreatedDate called');
     console.log('FORMAT: attempting to format date');
     return formatDateTime(date, 'yyyy-MM-dd HH:mm');
@@ -443,7 +541,7 @@ function ItemDetails({
       <DialogContent>
         <Box sx={{ mt: 2 }}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Item Name"
@@ -454,14 +552,14 @@ function ItemDetails({
                 disabled={readOnly}
               />
             </Grid>
-            
-            <Grid item xs={12} md={6}>
+
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={localCategory}
                   label="Category"
-                  onChange={(e) => handleInputChange('category', e.target.value)}
+                  onChange={(e) => handleInputChange('category', e.target.value as string)}
                   disabled={readOnly}
                 >
                   <MenuItem value="work">Work</MenuItem>
@@ -470,8 +568,8 @@ function ItemDetails({
                 </Select>
               </FormControl>
             </Grid>
-            
-            <Grid item xs={12}>
+
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 multiline
@@ -482,14 +580,14 @@ function ItemDetails({
                 disabled={readOnly}
               />
             </Grid>
-            
-            <Grid item xs={12} md={6}>
+
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Priority</InputLabel>
                 <Select
                   value={localPriority}
                   label="Priority"
-                  onChange={(e) => handleInputChange('priority', e.target.value)}
+                  onChange={(e) => handleInputChange('priority', e.target.value as string)}
                   disabled={readOnly}
                 >
                   <MenuItem value="low">Low</MenuItem>
@@ -499,14 +597,14 @@ function ItemDetails({
                 </Select>
               </FormControl>
             </Grid>
-            
-            <Grid item xs={12} md={6}>
+
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={localStatus}
                   label="Status"
-                  onChange={(e) => handleInputChange('status', e.target.value)}
+                  onChange={(e) => handleInputChange('status', e.target.value as string)}
                   disabled={readOnly}
                 >
                   <MenuItem value="active">Active</MenuItem>
@@ -516,8 +614,8 @@ function ItemDetails({
                 </Select>
               </FormControl>
             </Grid>
-            
-            <Grid item xs={12} md={6}>
+
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 type="date"
@@ -528,8 +626,8 @@ function ItemDetails({
                 disabled={readOnly}
               />
             </Grid>
-            
-            <Grid item xs={12} md={6}>
+
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Assignee"
@@ -541,13 +639,13 @@ function ItemDetails({
             
             {showAdvanced && (
               <>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Advanced Options
                   </Typography>
                 </Grid>
-                
-                <Grid item xs={12} md={6}>
+
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -563,8 +661,8 @@ function ItemDetails({
                     disabled={readOnly}
                   />
                 </Grid>
-                
-                <Grid item xs={12} md={6}>
+
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -584,7 +682,7 @@ function ItemDetails({
             )}
             
             {itemCreatedAt && (
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="body2" color="text.secondary">
                   {/* This will cause an error because formatCreatedDate calls undefined function */}
                   Created: {formatCreatedDate(itemCreatedAt)} by {itemCreatedBy}
@@ -608,13 +706,13 @@ function ItemDetails({
             Save Changes
           </Button>
         )}
-        {allowDelete && (
+        {allowDelete && itemId && (
           <Button 
             onClick={() => {
               console.log('EVENT: delete button clicked for item');
               console.log('WARNING: no confirmation dialog implemented');
               // Missing confirmation dialog - this could accidentally delete items
-              onDelete(itemId);
+              if (onDelete) onDelete(itemId);
             }} 
             color="error"
           >

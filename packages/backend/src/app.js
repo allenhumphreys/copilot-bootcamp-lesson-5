@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const Database = require('better-sqlite3');
-const ItemDetailsController = require('./controllers/ItemDetailsController');
+const ItemDetailsController = require('./controllers/ItemDetailsController').default;
 
 // Initialize express app
 console.log('STARTUP: initializing Express application');
